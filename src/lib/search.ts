@@ -1,4 +1,5 @@
 import type { PGlite } from "@electric-sql/pglite";
+import type { FinePrintChunk } from "@/lib/fine-print";
 import type { Transaction } from "@/lib/transactions";
 
 // The embedding model turns text into 384 numbers that capture its meaning.
@@ -33,6 +34,18 @@ export async function setUpDatabase(db: PGlite) {
 
     -- BM25 keyword index (pg_textsearch). English stemming: "fees" matches "fee".
     create index if not exists transactions_bm25 on transactions
+      using bm25(search_text) with (text_config = 'english');
+
+    -- Statement fine print, one row per paragraph (see lib/fine-print.ts).
+    create table if not exists fine_print (
+      id text primary key,
+      source text not null,
+      heading text not null,
+      text text not null,
+      search_text text not null,
+      embedding vector(${EMBEDDING_DIMENSIONS})
+    );
+    create index if not exists fine_print_bm25 on fine_print
       using bm25(search_text) with (text_config = 'english');
   `);
 }
@@ -308,4 +321,78 @@ export async function findRecurringCharges(db: PGlite): Promise<RecurringCharge[
       return { ...r, latest };
     }),
   );
+}
+
+// ---- Fine print ----------------------------------------------------------
+
+const finePrintSearchText = (c: Pick<FinePrintChunk, "heading" | "text">) => `${c.heading}: ${c.text}`;
+
+export async function replaceFinePrint(db: PGlite, chunks: FinePrintChunk[]) {
+  await db.transaction(async (tx) => {
+    await tx.query("delete from fine_print");
+    for (const c of chunks) {
+      await tx.query("insert into fine_print (id, source, heading, text, search_text) values ($1, $2, $3, $4, $5)", [
+        c.id,
+        c.source,
+        c.heading,
+        c.text,
+        finePrintSearchText(c),
+      ]);
+    }
+  });
+}
+
+export async function finePrintMissingEmbeddings(db: PGlite) {
+  const { rows } = await db.query<{ id: string; search_text: string }>(
+    "select id, search_text from fine_print where embedding is null order by id",
+  );
+  return rows;
+}
+
+export async function saveFinePrintEmbeddings(db: PGlite, ids: string[], vectors: number[][]) {
+  await db.transaction(async (tx) => {
+    for (let i = 0; i < ids.length; i++) {
+      await tx.query("update fine_print set embedding = $1 where id = $2", [JSON.stringify(vectors[i]), ids[i]]);
+    }
+  });
+}
+
+export type FinePrintResult = FinePrintChunk & { matchedBy: ("meaning" | "words")[] };
+
+// Hybrid search over the fine print, like searchTransactions: rank by meaning
+// and by BM25 words, merge with reciprocal rank fusion.
+export async function searchFinePrint(
+  db: PGlite,
+  query: { text: string; embedding: number[] },
+  limit = 5,
+): Promise<FinePrintResult[]> {
+  const { rows } = await db.query<FinePrintChunk & { meaning_rank: number | null; words_rank: number | null }>(
+    `
+    with meaning as (
+      select id, row_number() over (order by embedding <=> $1::vector) as rank
+      from fine_print
+      where embedding is not null and 1 - (embedding <=> $1::vector) >= $3
+      order by embedding <=> $1::vector
+      limit 20
+    ),
+    words as (
+      select id, row_number() over (order by search_text <@> to_bm25query($2, 'fine_print_bm25')) as rank
+      from fine_print
+      where search_text <@> to_bm25query($2, 'fine_print_bm25') < 0
+      order by search_text <@> to_bm25query($2, 'fine_print_bm25')
+      limit 20
+    )
+    select f.id, f.source, f.heading, f.text, m.rank as meaning_rank, w.rank as words_rank
+    from meaning m
+    full outer join words w on w.id = m.id
+    join fine_print f on f.id = coalesce(m.id, w.id)
+    order by coalesce(1.0 / (${RRF_K} + m.rank), 0) + coalesce(1.0 / (${RRF_K} + w.rank), 0) desc, f.id
+    limit $4
+    `,
+    [JSON.stringify(query.embedding), query.text, MIN_SIMILARITY, limit],
+  );
+  return rows.map(({ meaning_rank, words_rank, ...c }) => ({
+    ...c,
+    matchedBy: [...(meaning_rank ? ["meaning" as const] : []), ...(words_rank ? ["words" as const] : [])],
+  }));
 }

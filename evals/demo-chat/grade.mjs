@@ -16,8 +16,8 @@
 
 export const JUDGE_MODEL = 'claude-sonnet-5-5';
 
-// [T3] and [T3, T4] style references, as the chat UI reads them.
-export const citedRefs = text => (text.match(/\[T\d+(?:,\s*T\d+)*\]/g) ?? []).flatMap(g => g.match(/T\d+/g));
+// [T3] (transaction), [D2] (fine print) and [T3, T4] style references, as the chat UI reads them.
+export const citedRefs = text => (text.match(/\[[TD]\d+(?:,\s*[TD]\d+)*\]/g) ?? []).flatMap(g => g.match(/[TD]\d+/g));
 
 const conversationText = input => input.history.map(t => `${t.role.toUpperCase()}: ${t.content}`).join('\n\n');
 
@@ -113,8 +113,8 @@ export async function gradeCase(input, run, ref = null) {
 
   // Citations: every [T#] must be real; fact answers must cite something.
   const refs = [...new Set(citedRefs(text))];
-  const cited = refs.map(r => run.sources?.[r]).filter(Boolean);
-  const unknown = refs.filter(r => !run.sources?.[r]);
+  const cited = refs.map(r => run.sources?.[r]).filter(Boolean); // transactions only
+  const unknown = refs.filter(r => !run.sources?.[r] && !run.documents?.[r]);
   const needsCitation = !input.no_citations_ok && expected.length > 0;
   applies.citations = needsCitation || refs.length > 0;
   const citations = unknown.length === 0 && (!needsCitation || refs.length > 0) ? 1 : 0;

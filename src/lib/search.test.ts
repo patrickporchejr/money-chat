@@ -4,7 +4,7 @@
 import assert from "node:assert/strict";
 import { before, describe, it } from "node:test";
 import type { PGlite } from "@electric-sql/pglite";
-import { findRecurringCharges, listTransactions, summarizeTransactions } from "@/lib/search";
+import { findRecurringCharges, listTransactions, searchFinePrint, summarizeTransactions } from "@/lib/search";
 import { sampleDatabase } from "@/lib/test-helpers";
 
 const COFFEE = [
@@ -113,5 +113,27 @@ describe("findRecurringCharges", () => {
     for (const notRecurring of ["BLUE BOTTLE COFFEE #12", "MTA*NYCT PAYGO", "CON ED OF NY ONLINE PMT"]) {
       assert.ok(!found.includes(notRecurring), `${notRecurring} shouldn't count as recurring`);
     }
+  });
+});
+
+describe("searchFinePrint (keyword half; meaning needs the embedding model)", () => {
+  // No embeddings in tests, so the meaning ranking finds nothing and results come from BM25.
+  const noMeaning = new Array(384).fill(0.01);
+
+  it("finds the rule for a fee", async () => {
+    const [top] = await searchFinePrint(db, { text: "overdraft fee", embedding: noMeaning });
+    assert.match(top.text, /^Overdraft fee: \$35\.00/);
+    assert.deepEqual(top.matchedBy, ["words"]);
+  });
+
+  it("matches word forms (stemming) and section headings", async () => {
+    const [top] = await searchFinePrint(db, { text: "late payments", embedding: noMeaning });
+    assert.match(top.text, /^Late payment fee/);
+    const rates = await searchFinePrint(db, { text: "notice of change", embedding: noMeaning });
+    assert.ok(rates.some((c) => c.text.includes("24.99%")));
+  });
+
+  it("returns nothing for unrelated words", async () => {
+    assert.deepEqual(await searchFinePrint(db, { text: "xyzzy", embedding: noMeaning }), []);
   });
 });

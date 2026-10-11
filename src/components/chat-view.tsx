@@ -4,6 +4,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { ArrowUp, Loader2, Paperclip, Search, Sparkles, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { ChatMessage } from "@/hooks/use-chat";
+import type { FinePrintChunk } from "@/lib/fine-print";
 import { SUGGESTED_QUESTIONS } from "@/lib/suggested-questions";
 import type { Transaction } from "@/lib/transactions";
 
@@ -131,7 +132,8 @@ export function ChatView({
 
 function Answer({ message }: { message: ChatMessage }) {
   const sources = message.sources ?? {};
-  const cited = [...new Set(refsIn(message.content))].filter((ref) => sources[ref]);
+  const documents = message.documents ?? {};
+  const cited = [...new Set(refsIn(message.content))].filter((ref) => sources[ref] || documents[ref]);
 
   return (
     <div className="flex max-w-[90%] flex-col gap-2 text-sm">
@@ -148,7 +150,7 @@ function Answer({ message }: { message: ChatMessage }) {
 
       {message.content ? (
         <p className="whitespace-pre-wrap leading-relaxed">
-          <WithCitations text={message.content} sources={sources} />
+          <WithCitations text={message.content} sources={sources} documents={documents} />
         </p>
       ) : message.pending ? (
         <p className="flex items-center gap-2 text-muted-foreground">
@@ -164,14 +166,25 @@ function Answer({ message }: { message: ChatMessage }) {
             {cited.length} source{cited.length === 1 ? "" : "s"}
           </summary>
           <ul className="mt-2 flex flex-col gap-1">
-            {cited.map((ref) => (
-              <li key={ref} className="flex gap-2">
-                <span className="w-7 shrink-0 font-medium text-primary">{ref}</span>
-                <span className="w-20 shrink-0 text-muted-foreground">{sources[ref].date}</span>
-                <span className="min-w-0 flex-1 truncate">{sources[ref].description}</span>
-                <span className="shrink-0 tabular-nums">{formatMoney(sources[ref].amount)}</span>
-              </li>
-            ))}
+            {cited.map((ref) =>
+              sources[ref] ? (
+                <li key={ref} className="flex gap-2">
+                  <span className="w-7 shrink-0 font-medium text-primary">{ref}</span>
+                  <span className="w-20 shrink-0 text-muted-foreground">{sources[ref].date}</span>
+                  <span className="min-w-0 flex-1 truncate">{sources[ref].description}</span>
+                  <span className="shrink-0 tabular-nums">{formatMoney(sources[ref].amount)}</span>
+                </li>
+              ) : (
+                <li key={ref} className="flex gap-2">
+                  <span className="w-7 shrink-0 font-medium text-primary">{ref}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="text-muted-foreground">Fine print · {documents[ref].heading}</span>
+                    <br />
+                    {documents[ref].text}
+                  </span>
+                </li>
+              ),
+            )}
           </ul>
         </details>
       )}
@@ -179,20 +192,35 @@ function Answer({ message }: { message: ChatMessage }) {
   );
 }
 
-// References look like [T3], or sometimes [T3, T4].
-const REFS = /(\[T\d+(?:,\s*T\d+)*\])/g;
-const refsIn = (text: string) => text.match(REFS)?.flatMap((group) => group.match(/T\d+/g)!) ?? [];
+// References look like [T3] (a transaction) or [D2] (fine print), or sometimes [T3, T4].
+const REFS = /(\[[TD]\d+(?:,\s*[TD]\d+)*\])/g;
+const refsIn = (text: string) => text.match(REFS)?.flatMap((group) => group.match(/[TD]\d+/g)!) ?? [];
 
-// Turns "[T3]" in the answer into a small chip that shows the transaction on hover.
-function WithCitations({ text, sources }: { text: string; sources: Record<string, Transaction> }) {
+// Turns "[T3]" in the answer into a small chip that shows what it points to on hover.
+function WithCitations({
+  text,
+  sources,
+  documents,
+}: {
+  text: string;
+  sources: Record<string, Transaction>;
+  documents: Record<string, FinePrintChunk>;
+}) {
   return text.split(REFS).map((part, i) => {
-    if (!/^\[T\d/.test(part)) return <Fragment key={i}>{part}</Fragment>;
+    if (!/^\[[TD]\d/.test(part)) return <Fragment key={i}>{part}</Fragment>;
     return refsIn(part).map((ref) => {
       const t = sources[ref];
+      const d = documents[ref];
       return (
         <span
           key={`${i}-${ref}`}
-          title={t ? `${t.date} · ${t.description} · ${formatMoney(t.amount)} · ${t.account}` : undefined}
+          title={
+            t
+              ? `${t.date} · ${t.description} · ${formatMoney(t.amount)} · ${t.account}`
+              : d
+                ? `Fine print · ${d.heading}\n${d.text}`
+                : undefined
+          }
           className="mx-0.5 inline-flex cursor-default items-center rounded bg-primary/10 px-1 align-baseline text-[10px] font-medium text-primary"
         >
           {ref}

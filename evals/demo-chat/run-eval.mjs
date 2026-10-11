@@ -178,7 +178,7 @@ const sumUsage = rs => rs.reduce((u, r) => {
 async function runCase(input, ctx) {
   const { client, agent, sample, db } = await loadApp();
   const events = [];
-  const { system, messages, responses, sources } = await agent.runAgent({
+  const { system, messages, responses, sources, documents } = await agent.runAgent({
     client, model: ctx.model ?? agent.DEMO_MODEL, db, embed: sample.embed,
     history: input.history, onEvent: e => events.push(e),
   });
@@ -199,7 +199,7 @@ async function runCase(input, ctx) {
 
   const last = responses.at(-1);
   return {
-    output, sources, errors, transcript,
+    output, sources, documents, errors, transcript,
     model: last?.model, usage: sumUsage(responses), stop_reason: last?.stop_reason,
     tool_calls: responses.flatMap(r => r.content).filter(b => b.type === 'tool_use').length,
   };
