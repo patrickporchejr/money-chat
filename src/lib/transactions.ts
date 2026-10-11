@@ -6,8 +6,9 @@ export type Transaction = {
   date: string; // YYYY-MM-DD
   description: string; // exactly as the bank wrote it
   amount: number; // negative = money out, positive = money in
-  category: string | null; // only if the bank gave one
+  category: string | null; // from the bank, or from a store label (lib/labels)
   account: string; // which statement it came from
+  merchant?: string | null; // cleaned-up store name, e.g. "Blue Bottle Coffee", once labeled
 };
 
 // Banks name their columns differently. These are the names we look for,

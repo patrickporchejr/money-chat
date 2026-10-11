@@ -786,5 +786,31 @@
     ],
     "relevant": "LATE|PAYMENT THANK|INTEREST",
     "truth": "The payment is due on the 15th; the February 2026 card payment was made on 2026-02-22, so a $29 late payment fee was charged (2026-02-16), followed by an $18.74 interest charge."
+  },
+  {
+    "id": "blue-bottle-visits",
+    "tags": [
+      "store-names",
+      "math"
+    ],
+    "question": "How many times did I go to Blue Bottle?",
+    "must_include": [
+      "\\b96\\b"
+    ],
+    "relevant": "BLUE",
+    "truth": "96 visits across all three spellings: BLUE BOTTLE COFFEE #12 (36), SQ *BLUEBOTTLE OAKLAND (35) and SQ *BLUE BTL 0423 OAKLAND CA (25)."
+  },
+  {
+    "id": "car-spending",
+    "tags": [
+      "store-names",
+      "math"
+    ],
+    "question": "How much have I spent on my car?",
+    "must_include": [
+      "8,?150"
+    ],
+    "relevant": "MIDAS",
+    "truth": "$8,150 at Midas Auto Service (2026-06-11), the only car expense. It's labeled Auto, so it's findable even though the description never says \"car\"."
   }
 ]

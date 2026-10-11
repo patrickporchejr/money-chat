@@ -10,15 +10,17 @@ import { env, pipeline, type FeatureExtractionPipeline } from "@huggingface/tran
 import { chunkFinePrint } from "@/lib/fine-print";
 import {
   EMBEDDING_MODEL,
+  applyLabels,
   finePrintMissingEmbeddings,
   replaceFinePrint,
   replaceTransactions,
   saveEmbeddings,
   saveFinePrintEmbeddings,
+  saveLabels,
   setUpDatabase,
   textsMissingEmbeddings,
 } from "@/lib/search";
-import { readFinePrint, readSampleFiles } from "@/lib/server/sample-files";
+import { readFinePrint, readSampleFiles, SAMPLE_LABELS } from "@/lib/server/sample-files";
 import { accountNameFromFile, parseStatement } from "@/lib/transactions";
 
 // Servers like Vercel only allow writing to the temp folder; the model is cached there.
@@ -40,6 +42,8 @@ export function getSampleDatabase() {
     await setUpDatabase(pg);
     const transactions = (await readSampleFiles()).flatMap((f) => parseStatement(f.text, accountNameFromFile(f.name)));
     await replaceTransactions(pg, transactions);
+    await saveLabels(pg, SAMPLE_LABELS, "model"); // store names, labeled once by scripts/label-sample.mts
+    await applyLabels(pg);
     const texts = await textsMissingEmbeddings(pg);
     await saveEmbeddings(pg, texts, await embed(texts));
 

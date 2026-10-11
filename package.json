@@ -10,7 +10,8 @@
     "sample-data": "node scripts/make-sample-data.mjs",
     "save-answers": "tsx --env-file=.env.local scripts/save-answers.mts",
     "eval": "tsx --env-file=.env.local evals/demo-chat/run-eval.mjs --flow .claude/hillclimb/demo-chat",
-    "test": "tsx --test 'src/**/*.test.ts'"
+    "test": "tsx --test 'src/**/*.test.ts'",
+    "label-sample": "tsx --env-file=.env.local scripts/label-sample.mts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.133.0",

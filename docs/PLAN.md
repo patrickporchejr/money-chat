@@ -93,6 +93,17 @@ merchant_labels (        -- examples used to label new transactions
 
 **Chunking.** Fine print is split into paragraphs, each keeping its section heading (`lib/fine-print.ts`), in its own `fine_print` table with the same hybrid search. Each transaction is one chunk. Its search text is the description plus the bank's category (e.g. `WHOLEFDS BKN 10233 (Groceries)`), which helped a lot in testing. Identical texts are embedded once: the sample data's 663 transactions have only 45 unique texts. Fine print is split by section heading, with the heading kept on every chunk.
 
+### Store names (RAG at import time)
+
+Bank descriptions are messy (`SQ *BLUE BTL 0423 OAKLAND CA`), so each one gets a clean store name and category (`lib/labels.ts`, `merchant_labels` table):
+
+1. For each new description, find the 5 most similar descriptions that already have labels, by embedding. Corrections come first.
+2. Give them to Claude as examples, with a fixed category list and a structured response, and save the labels.
+3. Apply the labels to transactions. The store name goes into the search text, so "coffee" now finds `SQ *BLUE BTL`, and totals can filter and group by store across every spelling.
+4. **Corrections:** edit a store in Transactions and it applies to every transaction with that description right away, then shows up (marked as a correction) as an example the next time something similar is labeled. It learns without retraining.
+
+The sample data's labels were made once (`npm run label-sample`) and are saved in the repo, so the demo never pays for labeling. Your own uploads use a "Clean up with your key" button.
+
 ### Retrieval
 
 Hybrid search, run inside Postgres:
@@ -176,7 +187,7 @@ Each step is its own pull request, and each one ends with something you can see 
 6. **Exact math.** "How much did I spend on coffee?" uses RAG to pick the merchants, then the database adds them up. Also sorting ("cheapest coffee") and "last month" meaning the latest full month. ✅
 7. **Fine print.** "Why was I charged $35?" finds the fee, what caused it, and the rule. ✅
 8. **Bring your own key.** Chat about your real statements (and uploaded fine print, .txt/.md) with your own Claude key, straight from the browser. Opus 5.5 by default, with a model picker. ✅
-9. **Store names and categories.** Clean up messy bank names (`SQ *BLUE BTL 0423` → Blue Bottle Coffee) so search finds them too, and learn from your corrections.
+9. **Store names and categories.** Clean up messy bank names (`SQ *BLUE BTL 0423` → Blue Bottle Coffee) so search and totals find them, and learn from your corrections. ✅
 
 ## What we're not doing
 

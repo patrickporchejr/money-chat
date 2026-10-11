@@ -61,6 +61,7 @@ const Filters = z.object({
   min_amount: z.number().optional(),
   max_amount: z.number().optional(),
   descriptions: z.array(z.string()).max(50).optional(),
+  merchants: z.array(z.string()).max(50).optional(),
 });
 const SORTS = ["newest", "oldest", "largest_spend", "smallest_spend", "largest_deposit"] as const;
 const SearchInput = Filters.extend({
@@ -68,7 +69,7 @@ const SearchInput = Filters.extend({
   sort: z.enum(SORTS).optional(),
 });
 const SummarizeInput = Filters.extend({
-  group_by: z.enum(["none", "description", "month", "account", "category"]).optional(),
+  group_by: z.enum(["none", "merchant", "description", "month", "account", "category"]).optional(),
 });
 
 // The filters both tools share, as JSON Schema for Claude.
@@ -81,7 +82,12 @@ const FILTER_PROPERTIES = {
   descriptions: {
     type: "array",
     items: { type: "string" },
-    description: "Only these exact descriptions, copied from earlier search results (e.g. every spelling of a store).",
+    description: "Only these exact bank descriptions, copied from earlier search results.",
+  },
+  merchants: {
+    type: "array",
+    items: { type: "string" },
+    description: "Only these store names (cleaned up, covering every spelling), copied from earlier search results, e.g. [\"Blue Bottle Coffee\"].",
   },
 };
 
@@ -117,13 +123,13 @@ const TOOLS: Anthropic.Tool[] = [
     description:
       "Exact counts, totals and averages, calculated by the database. Use it for any \"how much\", \"how many\", " +
       "average or comparison question, instead of adding numbers yourself. First find which stores count with " +
-      "search_transactions, then pass their exact descriptions here. group_by splits the result, e.g. by month or " +
-      "by description to compare stores.",
+      "search_transactions, then pass their store names (merchants) here. group_by splits the result, e.g. by month or " +
+      "by merchant to compare stores.",
     input_schema: {
       type: "object",
       properties: {
         ...FILTER_PROPERTIES,
-        group_by: { type: "string", enum: ["none", "description", "month", "account", "category"] },
+        group_by: { type: "string", enum: ["none", "merchant", "description", "month", "account", "category"] },
       },
     },
   },
@@ -169,7 +175,7 @@ How to answer:
 - Answer only from what the tools return. If nothing relevant comes back, say so. Never say something doesn't exist just because you didn't find it: say you didn't find it.
 - Your earlier answers in this conversation came from searches you can no longer see. Trust them. If you need their details again, search again rather than taking anything back.
 - Cite every transaction you mention with its reference in square brackets, one per bracket, like [T3] or [T3][T4]. Cite fine print the same way, like [D2].
-- For totals, averages, counts or comparisons, never do the math yourself. First search to find the exact descriptions that count (for coffee: every spelling of every coffee shop), then use summarize_transactions with those descriptions and any dates. Count generously: anything the question plausibly covers belongs in (a café counts as coffee). Report its numbers exactly, and say what was included.
+- For totals, averages, counts or comparisons, never do the math yourself. First search to find the stores that count (for coffee: every coffee shop), then use summarize_transactions with their store names (merchants) and any dates. Store names already cover every spelling a bank uses; use exact descriptions only for transactions without a store name. Count generously: anything the question plausibly covers belongs in (a café counts as coffee). Report its numbers exactly, and say what was included.
 - For biggest, smallest, cheapest or most expensive, use search_transactions without a query, with a sort and filters (descriptions, account, dates).
 - Keep it short: one or two sentences, then at most 8 transactions as a list. Plain text only: no headings or bold. Start list items with "- ".
 - Only help with questions about these statements. For anything else, say that's all you can help with.`;
@@ -248,7 +254,7 @@ export async function runAgent({
   function cite(t: Transaction) {
     if (!refs.has(t.id)) refs.set(t.id, `T${refs.size + 1}`);
     const ref = refs.get(t.id)!;
-    sources[ref] = { id: t.id, account: t.account, date: t.date, description: t.description, amount: t.amount, category: t.category };
+    sources[ref] = { id: t.id, account: t.account, date: t.date, description: t.description, amount: t.amount, category: t.category, merchant: t.merchant };
     return ref;
   }
 
@@ -302,16 +308,20 @@ export async function runAgent({
       const rows = await listTransactions(db, filters, 60, sort);
       if (rows.length === 0) return "No transactions match those filters.";
       return `${rows.length} transactions${rows.length === 60 ? " (the first 60)" : ""}, sorted ${sort.replace("_", " ")}:\n` +
-        rows.map((t) => `${cite(t)} | ${t.date} | ${t.description} | ${t.amount.toFixed(2)} | ${t.account}`).join("\n");
+        rows.map((t) => `${cite(t)} | ${t.date} | ${t.merchant ? `${t.merchant} [bank: ${t.description}]` : t.description} | ${t.amount.toFixed(2)} | ${t.account}`).join("\n");
     }
 
     const [embedding] = await embed([input.query]);
     const results = await searchTransactions(db, { text: input.query, embedding }, filters, 200);
     if (results.length === 0) return "No matching transactions.";
 
-    // Group by description, keeping the search's ranking order between groups.
+    // Group by store (every spelling together), or by bank description when a
+    // transaction has no store name yet. Keeps the search's ranking order.
     const groups = new Map<string, typeof results>();
-    for (const t of results) groups.set(t.description, [...(groups.get(t.description) ?? []), t]);
+    for (const t of results) {
+      const key = t.merchant ?? t.description;
+      groups.set(key, [...(groups.get(key) ?? []), t]);
+    }
 
     const shown = [...groups.values()].slice(0, MAX_GROUPS).map((rows) => {
       const first = rows[0];
@@ -319,12 +329,16 @@ export async function runAgent({
       const newestFirst = [...rows].sort((a, b) => b.date.localeCompare(a.date));
       const latest = rows.length <= SHOW_ALL_UP_TO ? newestFirst : newestFirst.slice(0, LATEST_ROWS);
       const count = latest.length === rows.length ? `${rows.length} match${rows.length === 1 ? "" : "es"}` : `${rows.length} matches (latest ${latest.length} shown)`;
-      const header = `${first.description} (${first.account}${first.category ? `, ${first.category}` : ""}): ${count}, ${dates[0]} to ${dates.at(-1)}, matched by ${first.matchedBy.join(" + ")}`;
-      const lines = latest.map((t) => `  ${cite(t)} | ${t.date} | ${t.amount.toFixed(2)}`);
+      const spellings = [...new Set(rows.map((t) => t.description))];
+      const name = first.merchant ? `${first.merchant} [bank: ${spellings.join(" / ")}]` : first.description;
+      const accounts = [...new Set(rows.map((t) => t.account))].join(", ");
+      const matchedBy = [...new Set(rows.flatMap((t) => t.matchedBy))].join(" + ");
+      const header = `${name} (${accounts}${first.category ? `, ${first.category}` : ""}): ${count}, ${dates[0]} to ${dates.at(-1)}, matched by ${matchedBy}`;
+      const lines = latest.map((t) => `  ${cite(t)} | ${t.date} | ${t.amount.toFixed(2)}${spellings.length > 1 ? ` | ${t.description}` : ""}`);
       return [header, ...lines].join("\n");
     });
     const more = groups.size > MAX_GROUPS ? ` (showing the best ${MAX_GROUPS})` : "";
-    return `${results.length} matching transactions from ${groups.size} places${more}:\n\n${shown.join("\n\n")}`;
+    return `${results.length} matching transactions from ${groups.size} stores${more}:\n\n${shown.join("\n\n")}`;
   }
 
   const system = systemPrompt(data, mode);
@@ -433,12 +447,13 @@ function toFilters(input: z.infer<typeof Filters>): SearchFilters {
     minAmount: input.min_amount,
     maxAmount: input.max_amount,
     descriptions: input.descriptions,
+    merchants: input.merchants,
   };
 }
 
 // For the "Searched for ..." line when Claude lists or totals by filters.
 export function describeFilters(input: z.infer<typeof Filters> & { sort?: string }) {
-  const stores = input.descriptions ?? [];
+  const stores = [...(input.merchants ?? []), ...(input.descriptions ?? [])];
   const parts = [
     stores.length ? (stores.length <= 2 ? stores.join(" + ") : `${stores.length} stores`) : "",
     input.date_from && input.date_to

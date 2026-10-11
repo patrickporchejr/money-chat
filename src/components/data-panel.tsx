@@ -1,4 +1,5 @@
-import { CreditCard, FileText, Landmark, Loader2, Search, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { CreditCard, FileText, Landmark, Loader2, Search, Tags, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { FinePrintDocument, SearchStatus } from "@/hooks/use-statements";
 import type { Transaction } from "@/lib/transactions";
@@ -13,12 +14,17 @@ export function DataPanel({
   finePrint,
   searchStatus,
   onClear,
+  unlabeled,
+  onLabelStores,
 }: {
   transactions: Transaction[];
   finePrint: FinePrintDocument[];
   searchStatus: SearchStatus;
   onClear: () => void;
+  unlabeled: number;
+  onLabelStores: (() => Promise<void>) | null; // null until there's a key to label with
 }) {
+  const [labeling, setLabeling] = useState<"idle" | "busy" | string>("idle");
   const accounts = [...new Set(transactions.map((t) => t.account))].map((name) => {
     const rows = transactions.filter((t) => t.account === name);
     const dates = rows.map((t) => t.date).sort();
@@ -60,6 +66,37 @@ export function DataPanel({
       )}
 
       {searchStatus.state !== "idle" && <SearchStatusLine status={searchStatus} />}
+
+      {unlabeled > 0 && (
+        <div className="flex flex-col gap-2 rounded-lg border bg-background/60 p-3 text-xs">
+          <p className="flex items-center gap-2 font-medium">
+            <Tags className="size-3.5 text-primary" /> {unlabeled} store name{unlabeled === 1 ? "" : "s"} to clean up
+          </p>
+          <p className="text-muted-foreground">
+            Turns bank text like &ldquo;SQ *BLUE BTL 0423&rdquo; into &ldquo;Blue Bottle Coffee&rdquo;, so search and totals find it.
+          </p>
+          {onLabelStores ? (
+            <Button
+              size="sm"
+              disabled={labeling === "busy"}
+              onClick={async () => {
+                setLabeling("busy");
+                try {
+                  await onLabelStores();
+                  setLabeling("idle");
+                } catch (e) {
+                  setLabeling(e instanceof Error ? e.message : "Couldn't clean up store names.");
+                }
+              }}
+            >
+              {labeling === "busy" ? <Loader2 className="animate-spin" /> : null} Clean up with your key
+            </Button>
+          ) : (
+            <p className="text-muted-foreground">Add your Claude key in Chat to do this.</p>
+          )}
+          {labeling !== "idle" && labeling !== "busy" && <p className="text-destructive">{labeling}</p>}
+        </div>
+      )}
 
       <div className="mt-auto flex flex-col gap-2">
         <p className="text-xs text-muted-foreground">Saved in this browser only. Never uploaded.</p>

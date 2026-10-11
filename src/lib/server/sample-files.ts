@@ -7,6 +7,10 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { AGENT_SETTINGS } from "@/lib/agent";
 import { EMBEDDING_MODEL } from "@/lib/search";
+import sampleLabels from "@/data/sample-labels.json";
+
+// Store names for the sample data, labeled once by scripts/label-sample.mts.
+export const SAMPLE_LABELS: { description: string; merchant: string; category: string }[] = sampleLabels;
 
 const SAMPLE_FILES = ["harbor-bank-checking.csv", "summit-card.csv"];
 
@@ -27,7 +31,9 @@ let version: Promise<string> | null = null;
 export function answersVersion() {
   version ??= (async () => {
     const [files, finePrint] = await Promise.all([readSampleFiles(), readFinePrint()]);
-    const hash = createHash("sha256").update(JSON.stringify({ files, finePrint, agent: AGENT_SETTINGS, EMBEDDING_MODEL }));
+    const hash = createHash("sha256").update(
+      JSON.stringify({ files, finePrint, labels: SAMPLE_LABELS, agent: AGENT_SETTINGS, EMBEDDING_MODEL }),
+    );
     return hash.digest("hex").slice(0, 12);
   })();
   return version;

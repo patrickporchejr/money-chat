@@ -17,7 +17,8 @@ const SAMPLE_ACCOUNTS = SAMPLE_FILES.map(accountNameFromFile);
 // "Your data" on the right.
 export function AppShell() {
   const [view, setView] = useState<View>("chat");
-  const { transactions, finePrint, error, searchStatus, loadFiles, clear, search } = useStatements();
+  const { transactions, finePrint, unlabeled, error, searchStatus, loadFiles, clear, search, labelStores, correctStore } =
+    useStatements();
   const chat = useChat();
   // Your own Claude key: held in memory only, never saved. Gone when the tab closes.
   const [apiKey, setApiKey] = useState<string | null>(null);
@@ -36,7 +37,7 @@ export function AppShell() {
     const files = await Promise.all(
       SAMPLE_FILES.map(async (name) => ({ name, text: await (await fetch(`/sample-data/${name}`)).text() })),
     );
-    await loadFiles(files);
+    await loadFiles(files, (await import("@/data/sample-labels.json")).default);
   }
 
   // Files are read here, in the browser, and never uploaded anywhere.
@@ -87,13 +88,21 @@ export function AppShell() {
           <TransactionsTable
             transactions={transactions}
             search={search}
+            correctStore={correctStore}
             searchReady={searchStatus.state === "ready"}
             {...actions}
           />
         )}
       </main>
 
-      <DataPanel transactions={transactions} finePrint={finePrint} searchStatus={searchStatus} onClear={actions.clear} />
+      <DataPanel
+        transactions={transactions}
+        finePrint={finePrint}
+        searchStatus={searchStatus}
+        onClear={actions.clear}
+        unlabeled={unlabeled}
+        onLabelStores={apiKey ? () => labelStores(apiKey, model) : null}
+      />
 
       <input
         ref={fileInput}
