@@ -22,7 +22,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        {/* Follow the device's light/dark setting before the page paints. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `document.documentElement.classList.toggle("dark", matchMedia("(prefers-color-scheme: dark)").matches)`,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
