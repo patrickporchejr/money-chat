@@ -4,7 +4,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import { DEMO_MODEL, runAgent, type AgentEvent } from "@/lib/agent";
-import { embed, getSampleDatabase } from "@/lib/server/sample-data";
+import { findSavedAnswer, saveAnswer } from "@/lib/server/answers";
+import { answersVersion, embed, getSampleDatabase } from "@/lib/server/sample-data";
 
 export const maxDuration = 60;
 
@@ -25,20 +26,36 @@ export async function POST(request: Request) {
   const body = Body.safeParse(await request.json().catch(() => null));
   if (!body.success) return Response.json({ error: "Invalid request." }, { status: 400 });
 
+  const history = body.data.messages;
+  // Only a conversation's first question can reuse a saved answer.
+  const question = history.length === 1 ? history[0].content : null;
+  const version = await answersVersion();
+
   // Stream one JSON event per line, so the answer appears as it's written.
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
       const send = (event: AgentEvent) => controller.enqueue(encoder.encode(JSON.stringify(event) + "\n"));
       try {
-        await runAgent({
-          client: new Anthropic(), // reads ANTHROPIC_API_KEY
-          model: DEMO_MODEL,
-          db: await getSampleDatabase(),
-          embed,
-          history: body.data.messages,
-          onEvent: send,
-        });
+        const saved = question ? await findSavedAnswer(question, version) : null;
+        if (saved) {
+          send({ type: "saved" });
+          saved.forEach(send);
+        } else {
+          const events: AgentEvent[] = [];
+          await runAgent({
+            client: new Anthropic(), // reads ANTHROPIC_API_KEY
+            model: DEMO_MODEL,
+            db: await getSampleDatabase(),
+            embed,
+            history,
+            onEvent: (event) => {
+              events.push(event);
+              send(event);
+            },
+          });
+          if (question) await saveAnswer(question, version, events);
+        }
       } catch (err) {
         console.error("demo-chat failed", err);
         const message =
