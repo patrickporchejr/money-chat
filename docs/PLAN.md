@@ -1,0 +1,168 @@
+# Money Chat: the plan
+
+Money Chat lets people ask questions about their bank statements in plain English. This page explains what we're building, in what order, and why.
+
+## The big ideas
+
+**Your data stays with you.** Statements are read and stored in your browser. Our server never sees them.
+
+**RAG where it helps, plain math where it doesn't.** RAG means finding the right pieces of your data and handing them to the AI before it answers. We use it to:
+
+1. **Find transactions** from a vague description ("that coffee place near work").
+2. **Sort transactions into categories** by comparing them to ones already sorted. Fix one, and it learns.
+3. **Read the fine print** ("why was I charged $35?") by finding both the fee and the rule that explains it.
+4. **Turn vague questions into exact numbers** ("how much on coffee?"): RAG decides what counts as coffee, then plain math adds it up.
+
+Totals and averages are always plain math, never the AI, so the numbers are exact.
+
+## How people use it
+
+- **Try it with sample data:** one year of made-up statements. No setup and nothing to paste. This runs on our Claude key, with the protections below.
+- **Use your own statements:** bring your own Claude key. The key stays in memory only and is gone when you close the tab. We suggest making a separate key with a spending limit.
+
+## Keeping our costs safe (sample data mode)
+
+1. **Hard spending cap.** The demo uses its own Anthropic workspace with a monthly limit. If it's hit, the demo pauses. It never overspends.
+2. **Demo questions only.** The browser sends just the question. Our server adds the sample data and fixed instructions, so nobody can use our key for anything else.
+3. **Per-visitor limits.** A few questions per hour per visitor, plus a daily total for the whole site.
+4. **Small and cheap.** A smaller Claude model, with short answers.
+5. **Saved answers.**
+   - *Suggested questions* (the clickable starters) are answered once by a script and saved in the project. Visitors get the saved answer, which costs nothing. We re-run the script only when the sample data or the questions change, not on every deploy.
+   - *Other questions* are saved after the first time anyone asks them, so asking again is free.
+
+## Architecture
+
+This section is more technical.
+
+### Overview
+
+```mermaid
+flowchart LR
+  subgraph Browser
+    UI[Chat UI<br/>Next.js + shadcn/ui]
+    Parse[CSV reader<br/>papaparse]
+    Embed[Embedding model<br/>transformers.js, Web Worker]
+    DB[(PGlite<br/>Postgres + pgvector<br/>stored in IndexedDB)]
+    Agent[Agent loop + tools]
+  end
+  subgraph "Our server (Vercel)"
+    Demo["/api/demo-chat"]
+    Cache[(Answer cache)]
+    SampleDB[(Sample data index)]
+  end
+  Claude[Claude API]
+
+  Parse --> Embed --> DB
+  UI --> Agent
+  Agent -- "own data + own key" --> Claude
+  Agent <--> DB
+  UI -- "sample data: question only" --> Demo
+  Demo <--> Cache
+  Demo <--> SampleDB
+  Demo -- "our key" --> Claude
+```
+
+### Where things run
+
+| Piece | Runs in | Choice | Why |
+|---|---|---|---|
+| CSV reading | Browser | `papaparse` + our column matcher | Files never leave the device |
+| Database | Browser | PGlite (Postgres compiled to WASM) with `pgvector`, saved in IndexedDB | Real SQL for exact math, vector search, and Postgres full-text search in one place. The same code runs in Node for the demo |
+| Embeddings | Browser | `transformers.js` with a small model (e.g. `bge-small-en`, 384 dimensions), in a Web Worker | Anthropic has no embeddings API, and this keeps users to one key. About 30 MB, downloaded once and cached |
+| AI answers | Claude API | User's key (their data), our key (demo) | Best answer quality, no model downloads |
+
+### Data model
+
+```sql
+transactions (
+  id, account, date, description, amount, category,
+  merchant,              -- cleaned-up name, e.g. "Blue Bottle Coffee"
+  embedding vector(384), -- meaning, for search by meaning
+  search tsvector        -- words, for keyword search
+)
+
+documents (              -- fine print, split into chunks
+  id, source, chunk_text, embedding vector(384), search tsvector
+)
+
+merchant_labels (        -- examples used to label new transactions
+  raw_description, merchant, category,
+  source                 -- 'model' or 'user' (user corrections win)
+)
+```
+
+**Chunking.** Each transaction is one chunk. Its embedding text is built from the description, merchant, category, and amount, not just the raw bank string. Fine print is split by section heading, with the heading kept on every chunk.
+
+### Retrieval
+
+Hybrid search, run inside Postgres:
+
+1. **Filter first** on structured fields the model extracts from the question (date range, account, amount range).
+2. **Two rankings** of what's left: vector similarity (`pgvector`, cosine) and keyword match (Postgres full-text `ts_rank`).
+3. **Merge** with reciprocal rank fusion, then return the top k with their IDs so answers can cite them.
+
+### The agent
+
+Claude gets a small set of tools and decides which to call, possibly more than once:
+
+| Tool | What it does | RAG? |
+|---|---|---|
+| `search_transactions(query, date_from?, date_to?, account?, min_amount?, max_amount?)` | Hybrid search over transactions | Yes |
+| `search_fine_print(query)` | Hybrid search over statement documents | Yes |
+| `sum_transactions(merchants? \| categories?, date_from?, date_to?, group_by?)` | Exact totals in SQL | No, plain math |
+
+For "how much did I spend on coffee?", Claude calls `search_transactions("coffee")` to find which merchants count, then `sum_transactions(merchants=[...])` for the exact total. Answers must cite the transaction IDs or fine print chunks they used.
+
+The agent loop and tools are one TypeScript module that takes a database connection. In the browser it gets the user's PGlite. On the server it gets the sample data index.
+
+### The two modes
+
+**Sample data (our key)**
+1. The browser sends only `{ question }` (length-capped) to `/api/demo-chat`.
+2. The server rate-limits by visitor and checks a daily total.
+3. It checks the answer cache:
+   - *Suggested questions*: answers are generated by `npm run cache-answers` and committed as JSON. Re-run when the sample data, the questions, or the prompt change.
+   - *Other questions*: keyed by a hash of the normalized question plus a version string (data + prompt + model), stored in a server-side cache (Vercel Runtime Cache or Upstash Redis). Bumping the version clears it.
+4. On a miss, it runs the agent against the sample index with a smaller Claude model and a capped answer length, then saves the answer.
+5. The backstop is a separate Anthropic workspace with a monthly spending limit.
+
+The sample index (sample data plus embeddings) is built by a script, so the server never needs to embed anything at request time.
+
+**Your own data (your key)**
+- The agent loop runs in the browser and calls the Claude API directly with the user's key.
+- The key is held in memory only: no `localStorage`, gone when the tab closes.
+- Statement data goes only to Anthropic, as part of the question. Never to our server.
+
+### Security
+
+- **Content Security Policy.** `connect-src` allows only our own origin, `api.anthropic.com`, and the host serving the embedding model files. No third-party scripts or analytics on the page.
+- **No server storage of user data.** Our only API route is the demo, and it never accepts transaction data.
+- **Clear data.** One button deletes the PGlite database from the browser.
+
+### Quality checks (evals)
+
+A fixed list of questions about the sample data, each with the right answer and the transactions that should be found. A script scores:
+- **Retrieval:** did search find the right transactions? (recall@k)
+- **Answers:** is the number or fact correct, and are the citations real?
+
+We run it before merging changes to search, prompts, or models, and report the scores in the PR.
+
+## Build order
+
+Each step is its own pull request, and each one ends with something you can see working.
+
+1. **Load the data.** "Try sample data" or upload CSVs, and see every transaction in a table.
+2. **Search by meaning.** Searching "coffee" finds all the different ways the bank wrote Blue Bottle.
+3. **Chat (sample data).** Ask a question, get an answer that points to the transactions it used.
+4. **Saved answers and limits.** Suggested questions, the answer cache, rate limits.
+5. **Exact math.** "How much did I spend on coffee?" uses RAG to pick the merchants, then adds them up.
+6. **Fine print.** "Why was I charged $35?" finds the fee and the rule.
+7. **Bring your own key.** Use the app with your real statements.
+8. **Auto-categories.** Learn from your corrections.
+9. **Quality checks.** A fixed list of questions with known answers, scored automatically, so we can prove changes make it better.
+
+## What we're not doing
+
+- No running AI models inside the browser. You bring a key, or use the demo.
+- No accounts or logins.
+- No PDF statements at first. CSV only; PDF may come later.
