@@ -29,6 +29,18 @@ It uses this in four places:
 
 Totals and averages are always done with plain math, not the AI, so the numbers are exact.
 
+## Sample data
+
+The app comes with one year of **made-up** bank data in `public/sample-data/`, so anyone can try it without uploading their own:
+
+- `harbor-bank-checking.csv`: a checking account (paychecks, rent, bills)
+- `summit-card.csv`: a credit card in a different layout, like a second bank would use
+- `fine-print.txt`: the fee rules and notices that explain the charges
+
+It has a few things to find on purpose: messy store names, monthly subscriptions, an overdraft after a big car repair, a late card payment, and foreign fees from a trip to Lisbon.
+
+To rebuild it: `npm run sample-data`
+
 ## Run it locally
 
 ```bash

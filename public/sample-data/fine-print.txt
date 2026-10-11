@@ -1,0 +1,37 @@
+SAMPLE DATA: Harbor Bank and Summit Card are made up. This text is fake and only for demo use.
+
+==============================
+HARBOR BANK: EVERYDAY CHECKING
+Fee schedule
+==============================
+
+Monthly maintenance fee: $12.00
+We charge this fee on the first day of the month if your balance dropped below $1,500.00 at any point during the previous month. Keep at least $1,500.00 in your account all month to avoid it.
+
+Overdraft fee: $35.00
+If a payment or purchase takes your balance below $0.00 and we pay it anyway, we charge an overdraft fee. We charge no more than 3 overdraft fees per day. Bring your balance back above $0.00 to avoid more fees.
+
+Incoming transfers and direct deposits: free.
+Zelle payments: free.
+
+==============================
+SUMMIT CARD: CARDHOLDER AGREEMENT
+Rates and fees
+==============================
+
+Payment due date: the 15th of each month.
+
+Late payment fee: up to $29.00
+If we do not get at least your minimum payment by 5:00 PM Eastern Time on your due date, we charge a late payment fee.
+
+Interest: If you do not pay your full balance by the due date, we charge interest on purchases. Interest shows up on your statement as "INTEREST CHARGE ON PURCHASES."
+
+Foreign transaction fee: 3% of each purchase
+We charge this fee on purchases made in a currency other than US dollars, or processed outside the United States. It shows up as a separate line called "FOREIGN TRANSACTION FEE" on the same day as the purchase.
+
+==============================
+SUMMIT CARD: NOTICE OF CHANGE TO YOUR ACCOUNT
+Sent: February 15, 2026
+==============================
+
+Starting April 1, 2026, the interest rate (APR) on purchases will go up from 22.49% to 24.99%. This change is because the Prime Rate went up. You do not need to do anything. If you pay your full balance every month, you will not pay interest.
