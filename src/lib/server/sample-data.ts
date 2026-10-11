@@ -8,20 +8,24 @@ import path from "node:path";
 import { PGlite } from "@electric-sql/pglite";
 import { vector } from "@electric-sql/pglite-pgvector";
 import { pg_textsearch } from "@electric-sql/pglite-pg_textsearch";
-import { env, pipeline, type FeatureExtractionPipeline } from "@huggingface/transformers";
+import type { FeatureExtractionPipeline } from "@huggingface/transformers";
 import { AGENT_SETTINGS } from "@/lib/agent";
 import { EMBEDDING_MODEL, replaceTransactions, saveEmbeddings, setUpDatabase, textsMissingEmbeddings } from "@/lib/search";
 import { accountNameFromFile, parseStatement } from "@/lib/transactions";
 
 const SAMPLE_FILES = ["harbor-bank-checking.csv", "summit-card.csv"];
 
-// Servers like Vercel only allow writing to the temp folder; the model is cached there.
-env.cacheDir = path.join(tmpdir(), "money-chat-models");
-
 let model: Promise<FeatureExtractionPipeline> | null = null;
 
+// The embedding library is loaded only when needed, so saved answers (which
+// don't embed anything) keep working even if it can't load.
 export async function embed(texts: string[]) {
-  model ??= pipeline("feature-extraction", EMBEDDING_MODEL, { dtype: "q8" });
+  model ??= (async () => {
+    const { env, pipeline } = await import("@huggingface/transformers");
+    // Servers like Vercel only allow writing to the temp folder; the model is cached there.
+    env.cacheDir = path.join(tmpdir(), "money-chat-models");
+    return pipeline("feature-extraction", EMBEDDING_MODEL, { dtype: "q8" });
+  })();
   const output = await (await model)(texts, { pooling: "mean", normalize: true });
   return output.tolist() as number[][];
 }
