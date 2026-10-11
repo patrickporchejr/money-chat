@@ -128,3 +128,7 @@
     @apply font-sans;
   }
 }
+/* Frosted-glass panel used across the app shell. */
+@utility glass {
+  @apply border border-white/70 bg-white/60 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-zinc-900/60;
+}
