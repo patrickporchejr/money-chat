@@ -26,7 +26,7 @@ export function TransactionsTable({
   upload: () => void;
   correctStore: (label: MerchantLabel) => Promise<void>;
 }) {
-  const [editing, setEditing] = useState<string | null>(null); // the description being corrected
+  const [editing, setEditing] = useState<string | null>(null); // the row whose store is being corrected
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[] | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -103,7 +103,7 @@ export function TransactionsTable({
                 <TableRow key={t.id}>
                   <TableCell className="whitespace-nowrap pl-4">{t.date}</TableCell>
                   <TableCell className="max-w-56 sm:max-w-none">
-                    {editing === t.description ? (
+                    {editing === t.id ? (
                       <StoreEditor
                         transaction={t}
                         onCancel={() => setEditing(null)}
@@ -123,7 +123,7 @@ export function TransactionsTable({
                           {t.merchant && <div className="truncate text-xs text-muted-foreground">{t.description}</div>}
                         </div>
                         <button
-                          onClick={() => setEditing(t.description)}
+                          onClick={() => setEditing(t.id)}
                           aria-label={`Correct the store for ${t.description}`}
                           title="Correct the store name or category (applies to every transaction like this)"
                           className="mt-0.5 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-primary focus:opacity-100"

@@ -24,7 +24,7 @@ This app uses **RAG** (retrieval-augmented generation). In plain terms: before t
 It uses this in four places:
 
 1. **Finding transactions.** "What was that coffee place near work?" The app finds the matching transactions, then the AI answers.
-2. **Sorting into categories.** New transactions get labeled by looking at similar ones you already have. Fix one once, and it learns.
+2. **Cleaning up store names.** `SQ *BLUE BTL 0423` becomes **Blue Bottle Coffee**: new descriptions are labeled by showing Claude similar ones that are already labeled. Fix one once, and it learns.
 3. **Reading the fine print.** "Why was I charged a fee?" The app finds the fee *and* the part of the statement that explains it.
 4. **Turning vague questions into exact numbers.** "How much on coffee?" The app works out what counts as coffee, then plain math adds it up.
 
