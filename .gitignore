@@ -45,3 +45,9 @@ next-env.d.ts
 *.ofx
 *.qfx
 statements/
+
+# eval outputs that can be regenerated (npm run eval, then the report builder)
+.claude/hillclimb/**/traces/
+.claude/hillclimb/**/report.html
+.claude/hillclimb/**/progress.txt
+.claude/hillclimb/**/trajectory/

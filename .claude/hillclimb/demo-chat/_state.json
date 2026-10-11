@@ -39,8 +39,8 @@
       "out": 0.5
     },
     "claude-sonnet-5-5": {
-      "in": 2.0,
-      "out": 10.0
+      "in": 2,
+      "out": 10
     }
   },
   "harness_paths": [
@@ -50,5 +50,6 @@
     "src/lib/search.ts",
     "src/lib/server/sample-data.ts"
   ],
-  "variants": []
+  "variants": [],
+  "harness_sha": "b660d2608e2ec5f2e8aef8667eec5fbd0a07beacd60c26c3e94293f9691f2720"
 }

@@ -29,6 +29,10 @@ It uses this in four places:
 
 Totals and averages are always done with plain math, not the AI, so the numbers are exact.
 
+## Quality checks
+
+`npm run eval` asks the chat 26 questions with known answers and grades every reply: plain code checks the facts and citations, and a second Claude model checks the rules (no made-up charges, no totals it can't do yet, stays on topic). Current baseline: 52/52 across two runs, about $0.07 per run. Details in [docs/PLAN.md](docs/PLAN.md).
+
 ## Sample data
 
 The app comes with one year of **made-up** bank data in `public/sample-data/`, so anyone can try it without uploading their own:
