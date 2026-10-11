@@ -5,11 +5,13 @@ import type { NextConfig } from "next";
 // keeps them from going anywhere except Anthropic, and only with your own key.
 //   api.anthropic.com      your own key's chat requests
 //   huggingface.co, *.hf.co  the embedding model download (once, then cached)
-//   cdn.jsdelivr.net       the embedding runtime (WebAssembly)
+// The embedding runtime (WebAssembly) is served from this site (public/ort).
+// blob: scripts are allowed as a backstop for browsers where the runtime still
+// loads itself that way; only code already running on the page can make them.
 const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net",
-  "connect-src 'self' https://api.anthropic.com https://huggingface.co https://*.huggingface.co https://*.hf.co https://cdn.jsdelivr.net",
+  "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob:",
+  "connect-src 'self' https://api.anthropic.com https://huggingface.co https://*.huggingface.co https://*.hf.co",
   "worker-src 'self' blob:",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",

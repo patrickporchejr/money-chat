@@ -51,3 +51,6 @@ statements/
 .claude/hillclimb/**/report.html
 .claude/hillclimb/**/progress.txt
 .claude/hillclimb/**/trajectory/
+
+# copied from node_modules at build time (scripts/copy-ort.mjs)
+/public/ort

@@ -1,7 +1,7 @@
 // Runs the embedding model in a background thread so the page stays responsive.
 // The model (~23 MB) downloads once, then the browser caches it.
 
-import { pipeline, type FeatureExtractionPipeline } from "@huggingface/transformers";
+import { env, pipeline, type FeatureExtractionPipeline } from "@huggingface/transformers";
 import { EMBEDDING_MODEL } from "@/lib/search";
 
 export type EmbedRequest = { id: number; texts: string[] };
@@ -9,6 +9,15 @@ export type EmbedResponse =
   | { type: "progress"; percent: number }
   | { type: "result"; id: number; vectors: number[][] }
   | { type: "error"; id: number; message: string };
+
+// Load the WebAssembly runtime from this site (copied by scripts/copy-ort.mjs),
+// not from a CDN, and import it directly rather than through a blob: URL, so
+// the page's security policy can stay strict.
+env.useWasmCache = false;
+env.backends.onnx.wasm!.wasmPaths = {
+  mjs: new URL("/ort/ort-wasm-simd-threaded.mjs", self.location.origin).href,
+  wasm: new URL("/ort/ort-wasm-simd-threaded.wasm", self.location.origin).href,
+};
 
 let model: Promise<FeatureExtractionPipeline> | null = null;
 
