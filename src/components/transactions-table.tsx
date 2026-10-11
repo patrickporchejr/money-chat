@@ -1,10 +1,11 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Search, X } from "lucide-react";
+import { Check, Pencil, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import type { SearchResult } from "@/lib/search";
+import { CATEGORIES } from "@/lib/labels";
+import type { MerchantLabel, SearchResult } from "@/lib/search";
 import type { Transaction } from "@/lib/transactions";
 
 const formatMoney = (amount: number) =>
@@ -16,13 +17,16 @@ export function TransactionsTable({
   searchReady,
   loadSampleData,
   upload,
+  correctStore,
 }: {
   transactions: Transaction[];
   search: (query: string) => Promise<SearchResult[]>;
   searchReady: boolean;
   loadSampleData: () => void;
   upload: () => void;
+  correctStore: (label: MerchantLabel) => Promise<void>;
 }) {
+  const [editing, setEditing] = useState<string | null>(null); // the description being corrected
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[] | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -89,9 +93,8 @@ export function TransactionsTable({
             <TableHeader className="sticky top-0 bg-white/90 backdrop-blur dark:bg-zinc-900/90">
               <TableRow>
                 <TableHead className="pl-4">Date</TableHead>
-                <TableHead>Description</TableHead>
+                <TableHead>Store</TableHead>
                 <TableHead className="hidden sm:table-cell">Account</TableHead>
-                <TableHead className="hidden sm:table-cell">Category</TableHead>
                 <TableHead className="pr-4 text-right">Amount</TableHead>
               </TableRow>
             </TableHeader>
@@ -99,14 +102,38 @@ export function TransactionsTable({
               {rows.map((t) => (
                 <TableRow key={t.id}>
                   <TableCell className="whitespace-nowrap pl-4">{t.date}</TableCell>
-                  <TableCell className="max-w-48 sm:max-w-none">
-                    <div className="flex items-center gap-2">
-                      <span className="truncate">{t.description}</span>
-                      {"matchedBy" in t && <MatchBadges matchedBy={t.matchedBy} />}
-                    </div>
+                  <TableCell className="max-w-56 sm:max-w-none">
+                    {editing === t.description ? (
+                      <StoreEditor
+                        transaction={t}
+                        onCancel={() => setEditing(null)}
+                        onSave={async (label) => {
+                          await correctStore(label);
+                          setEditing(null);
+                        }}
+                      />
+                    ) : (
+                      <div className="group flex items-start gap-2">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="truncate font-medium">{t.merchant ?? t.description}</span>
+                            {t.category && <span className="shrink-0 text-xs text-muted-foreground">{t.category}</span>}
+                            {"matchedBy" in t && <MatchBadges matchedBy={t.matchedBy} />}
+                          </div>
+                          {t.merchant && <div className="truncate text-xs text-muted-foreground">{t.description}</div>}
+                        </div>
+                        <button
+                          onClick={() => setEditing(t.description)}
+                          aria-label={`Correct the store for ${t.description}`}
+                          title="Correct the store name or category (applies to every transaction like this)"
+                          className="mt-0.5 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-primary focus:opacity-100"
+                        >
+                          <Pencil className="size-3.5" />
+                        </button>
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">{t.account}</TableCell>
-                  <TableCell className="hidden text-muted-foreground sm:table-cell">{t.category ?? ""}</TableCell>
                   <TableCell
                     className={`pr-4 text-right tabular-nums ${t.amount > 0 ? "text-green-700 dark:text-green-400" : ""}`}
                   >
@@ -137,5 +164,62 @@ function MatchBadges({ matchedBy }: { matchedBy: SearchResult["matchedBy"] }) {
         </span>
       ))}
     </span>
+  );
+}
+
+// Correct a store name and category. Applies to every transaction with this
+// bank description, and teaches the labeler for similar ones.
+function StoreEditor({
+  transaction,
+  onSave,
+  onCancel,
+}: {
+  transaction: Transaction;
+  onSave: (label: MerchantLabel) => Promise<void>;
+  onCancel: () => void;
+}) {
+  const [merchant, setMerchant] = useState(transaction.merchant ?? "");
+  const [category, setCategory] = useState(
+    CATEGORIES.includes(transaction.category as (typeof CATEGORIES)[number]) ? transaction.category! : "Other",
+  );
+  const [saving, setSaving] = useState(false);
+  return (
+    <form
+      onSubmit={async (e) => {
+        e.preventDefault();
+        if (!merchant.trim()) return;
+        setSaving(true);
+        await onSave({ description: transaction.description, merchant: merchant.trim(), category });
+      }}
+      className="flex flex-wrap items-center gap-1.5"
+    >
+      <input
+        autoFocus
+        value={merchant}
+        onChange={(e) => setMerchant(e.target.value)}
+        placeholder="Store name"
+        aria-label="Store name"
+        className="w-40 rounded border bg-background px-2 py-1 text-sm"
+      />
+      <select
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+        aria-label="Category"
+        className="rounded border bg-background px-1.5 py-1 text-sm"
+      >
+        {CATEGORIES.map((c) => (
+          <option key={c}>{c}</option>
+        ))}
+      </select>
+      <Button type="submit" size="icon-sm" disabled={saving || !merchant.trim()} aria-label="Save">
+        <Check />
+      </Button>
+      <Button type="button" size="icon-sm" variant="ghost" onClick={onCancel} aria-label="Cancel">
+        <X />
+      </Button>
+      <span className="w-full text-xs text-muted-foreground">
+        Applies to every &ldquo;{transaction.description}&rdquo; and helps label similar ones.
+      </span>
+    </form>
   );
 }

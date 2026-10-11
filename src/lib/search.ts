@@ -8,11 +8,14 @@ import type { Transaction } from "@/lib/transactions";
 export const EMBEDDING_MODEL = "Xenova/all-MiniLM-L6-v2";
 export const EMBEDDING_DIMENSIONS = 384;
 
-// What we embed and keyword-search for each transaction. Adding the bank's
-// category helps a lot, e.g. "WHOLEFDS BKN 10233 (Groceries)".
-export function searchText(t: Pick<Transaction, "description" | "category">) {
-  return t.category ? `${t.description} (${t.category})` : t.description;
+// What we embed and keyword-search for each transaction: the bank's text plus
+// the cleaned-up store name and category, e.g.
+// "SQ *BLUE BTL 0423 OAKLAND CA - Blue Bottle Coffee (Coffee)".
+// SEARCH_TEXT_SQL must build exactly the same string inside the database.
+export function searchText(t: Pick<Transaction, "description" | "category" | "merchant">) {
+  return t.description + (t.merchant ? ` - ${t.merchant}` : "") + (t.category ? ` (${t.category})` : "");
 }
+const SEARCH_TEXT_SQL = "description || coalesce(' - ' || merchant, '') || coalesce(' (' || category || ')', '')";
 
 // This code takes the database as an argument, so the same functions work in
 // the browser (the user's data) and on the server (the sample data demo).
@@ -29,6 +32,17 @@ export async function setUpDatabase(db: PGlite) {
       amount numeric(12, 2) not null,
       category text,
       search_text text not null,
+      embedding vector(${EMBEDDING_DIMENSIONS})
+    );
+    alter table transactions add column if not exists merchant text;
+
+    -- Store name and category for each bank description (see lib/labels.ts).
+    -- "user" labels are corrections and always win over "model" labels.
+    create table if not exists merchant_labels (
+      description text primary key,
+      merchant text not null,
+      category text not null,
+      source text not null check (source in ('model', 'user')),
       embedding vector(${EMBEDDING_DIMENSIONS})
     );
 
@@ -52,7 +66,7 @@ export async function setUpDatabase(db: PGlite) {
 
 const SELECT_TRANSACTION = `
   t.id, t.account, to_char(t.date, 'YYYY-MM-DD') as date, t.description,
-  t.amount::float8 as amount, t.category`;
+  t.amount::float8 as amount, t.category, t.merchant`;
 
 export async function getAllTransactions(db: PGlite) {
   const { rows } = await db.query<Transaction>(
@@ -106,6 +120,7 @@ export type SearchFilters = {
   minAmount?: number;
   maxAmount?: number;
   descriptions?: string[]; // exact descriptions, e.g. the stores a search found
+  merchants?: string[]; // cleaned-up store names, e.g. ["Blue Bottle Coffee", "Starbucks"]
 };
 
 // Turns filters into SQL conditions, adding their values to params.
@@ -121,6 +136,7 @@ function filterConditions(filters: SearchFilters, params: unknown[]) {
   if (filters.minAmount !== undefined) add("amount >= ?", filters.minAmount);
   if (filters.maxAmount !== undefined) add("amount <= ?", filters.maxAmount);
   if (filters.descriptions?.length) add("description = any(?)", filters.descriptions);
+  if (filters.merchants?.length) add("merchant = any(?)", filters.merchants);
   return where;
 }
 
@@ -152,7 +168,7 @@ export async function listTransactions(db: PGlite, filters: SearchFilters, limit
   return rows;
 }
 
-export type SummaryGroup = "none" | "description" | "month" | "account" | "category";
+export type SummaryGroup = "none" | "merchant" | "description" | "month" | "account" | "category";
 
 export type Summary = {
   group: string | null; // e.g. "2026-07" when grouped by month; null when not grouped
@@ -175,6 +191,7 @@ export async function summarizeTransactions(
   const where = filterConditions(filters, params);
   const groupSql = {
     none: "null::text",
+    merchant: "coalesce(merchant, description)",
     description: "description",
     month: "to_char(date, 'YYYY-MM')",
     account: "account",
@@ -407,4 +424,92 @@ export async function searchFinePrint(
     ...c,
     matchedBy: [...(meaning_rank ? ["meaning" as const] : []), ...(words_rank ? ["words" as const] : [])],
   }));
+}
+
+// ---- Store labels ----------------------------------------------------------
+
+export type MerchantLabel = { description: string; merchant: string; category: string };
+export type LabelSource = "model" | "user";
+
+// Saves labels. A "user" label (a correction) replaces anything; a "model"
+// label never overwrites a correction.
+export async function saveLabels(db: PGlite, labels: MerchantLabel[], source: LabelSource) {
+  await db.transaction(async (tx) => {
+    for (const l of labels) {
+      await tx.query(
+        `insert into merchant_labels (description, merchant, category, source) values ($1, $2, $3, $4)
+         on conflict (description) do update set merchant = excluded.merchant, category = excluded.category, source = excluded.source
+         where merchant_labels.source <> 'user' or excluded.source = 'user'`,
+        [l.description, l.merchant, l.category, source],
+      );
+    }
+  });
+}
+
+// Copies labels onto transactions. The bank's own category is kept unless the
+// user corrected it. Changed rows lose their embedding so search re-embeds them.
+export async function applyLabels(db: PGlite) {
+  await db.exec(`
+    update transactions t set
+      merchant = l.merchant,
+      category = case when l.source = 'user' or t.category is null then l.category else t.category end
+    from merchant_labels l
+    where l.description = t.description;
+
+    update transactions set search_text = ${SEARCH_TEXT_SQL}, embedding = null
+    where search_text <> ${SEARCH_TEXT_SQL};
+  `);
+}
+
+export async function clearLabels(db: PGlite) {
+  await db.query("delete from merchant_labels");
+}
+
+// Bank descriptions that don't have a label yet.
+export async function unlabeledDescriptions(db: PGlite) {
+  const { rows } = await db.query<{ description: string; category: string | null }>(`
+    select distinct on (t.description) t.description, t.category
+    from transactions t
+    left join merchant_labels l on l.description = t.description
+    where l.description is null
+    order by t.description`);
+  return rows;
+}
+
+export async function getLabels(db: PGlite) {
+  const { rows } = await db.query<MerchantLabel & { source: LabelSource }>(
+    "select description, merchant, category, source from merchant_labels order by description",
+  );
+  return rows;
+}
+
+export async function labelsMissingEmbeddings(db: PGlite) {
+  const { rows } = await db.query<{ description: string }>(
+    "select description from merchant_labels where embedding is null order by description",
+  );
+  return rows.map((r) => r.description);
+}
+
+export async function saveLabelEmbeddings(db: PGlite, descriptions: string[], vectors: number[][]) {
+  await db.transaction(async (tx) => {
+    for (let i = 0; i < descriptions.length; i++) {
+      await tx.query("update merchant_labels set embedding = $1 where description = $2", [
+        JSON.stringify(vectors[i]),
+        descriptions[i],
+      ]);
+    }
+  });
+}
+
+// The labeled descriptions most similar to a new one: the examples Claude
+// sees when labeling it. Corrections come first when equally close.
+export async function nearestLabels(db: PGlite, embedding: number[], k = 5) {
+  const { rows } = await db.query<MerchantLabel & { source: LabelSource }>(
+    `select description, merchant, category, source from merchant_labels
+     where embedding is not null
+     order by embedding <=> $1::vector, (source = 'user') desc
+     limit $2`,
+    [JSON.stringify(embedding), k],
+  );
+  return rows;
 }

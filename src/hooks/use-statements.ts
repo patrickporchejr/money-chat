@@ -4,7 +4,9 @@ import { useCallback, useEffect, useState } from "react";
 import { embed, getDatabase, onModelProgress } from "@/lib/browser";
 import { chunkFinePrint } from "@/lib/fine-print";
 import {
+  applyLabels,
   clearFinePrint,
+  clearLabels,
   clearTransactions,
   finePrintDocuments,
   finePrintMissingEmbeddings,
@@ -13,8 +15,11 @@ import {
   replaceTransactions,
   saveEmbeddings,
   saveFinePrintEmbeddings,
+  saveLabels,
+  type MerchantLabel,
   searchTransactions,
   textsMissingEmbeddings,
+  unlabeledDescriptions,
 } from "@/lib/search";
 import { accountNameFromFile, parseStatement, type Transaction } from "@/lib/transactions";
 import { baseName, uploadKind } from "@/lib/uploads";
@@ -35,6 +40,16 @@ export function useStatements() {
   const [finePrint, setFinePrint] = useState<FinePrintDocument[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [searchStatus, setSearchStatus] = useState<SearchStatus>({ state: "idle" });
+  const [unlabeled, setUnlabeled] = useState(0); // bank descriptions without a store name yet
+
+  const refresh = useCallback(async () => {
+    const db = await getDatabase();
+    const [rows, docs, todo] = await Promise.all([getAllTransactions(db), finePrintDocuments(db), unlabeledDescriptions(db)]);
+    setTransactions(rows);
+    setFinePrint(docs);
+    setUnlabeled(todo.length);
+    return { rows, docs };
+  }, []);
 
   // Gives every transaction and fine print paragraph an embedding so it can be
   // searched by meaning.
@@ -62,17 +77,15 @@ export function useStatements() {
   // On page load, show whatever was saved last time.
   useEffect(() => {
     (async () => {
-      const db = await getDatabase();
-      const [saved, docs] = await Promise.all([getAllTransactions(db), finePrintDocuments(db)]);
-      setTransactions(saved);
-      setFinePrint(docs);
-      if (saved.length || docs.length) prepareSearch();
+      const { rows, docs } = await refresh();
+      if (rows.length || docs.length) prepareSearch();
     })();
-  }, [prepareSearch]);
+  }, [prepareSearch, refresh]);
 
   // CSVs replace the statements; .txt/.md files replace the fine print.
+  // `labels` are ready-made store names (the sample data ships with them).
   const loadFiles = useCallback(
-    async (files: { name: string; text: string }[]) => {
+    async (files: { name: string; text: string }[], labels?: MerchantLabel[]) => {
       const unsupported = files.filter((f) => !uploadKind(f.name));
       if (unsupported.length) {
         return setError(
@@ -91,23 +104,48 @@ export function useStatements() {
       const db = await getDatabase();
       if (statements.length) {
         await replaceTransactions(db, parsed);
-        setTransactions(await getAllTransactions(db));
+        if (labels?.length) await saveLabels(db, labels, "model");
+        await applyLabels(db); // reuses labels (and corrections) for descriptions seen before
       }
       if (documents.length) {
         await replaceFinePrint(db, documents.flatMap((f) => chunkFinePrint(f.text, baseName(f.name))));
-        setFinePrint(await finePrintDocuments(db));
       }
+      await refresh();
       setError(null);
       prepareSearch();
     },
-    [prepareSearch],
+    [prepareSearch, refresh],
+  );
+
+  // Cleans up store names for your own statements, with your own key.
+  const labelStores = useCallback(
+    async (apiKey: string, model: string) => {
+      const [{ labelNewDescriptions }, { claudeClient }] = await Promise.all([import("@/lib/labels"), import("@/lib/browser")]);
+      await labelNewDescriptions({ client: await claudeClient(apiKey), model, db: await getDatabase(), embed });
+      await refresh();
+      prepareSearch(); // labeled rows get re-embedded with their store names
+    },
+    [prepareSearch, refresh],
+  );
+
+  // Your correction: applies to every transaction with this description now,
+  // and teaches future labeling.
+  const correctStore = useCallback(
+    async (label: MerchantLabel) => {
+      const { correctLabel } = await import("@/lib/labels");
+      await correctLabel(await getDatabase(), embed, label);
+      await refresh();
+      prepareSearch();
+    },
+    [prepareSearch, refresh],
   );
 
   const clear = useCallback(async () => {
     const db = await getDatabase();
-    await Promise.all([clearTransactions(db), clearFinePrint(db)]);
+    await Promise.all([clearTransactions(db), clearFinePrint(db), clearLabels(db)]);
     setTransactions([]);
     setFinePrint([]);
+    setUnlabeled(0);
     setSearchStatus({ state: "idle" });
   }, []);
 
@@ -119,5 +157,5 @@ export function useStatements() {
     return results.sort((a, b) => b.date.localeCompare(a.date));
   }, []);
 
-  return { transactions, finePrint, error, searchStatus, loadFiles, clear, search };
+  return { transactions, finePrint, unlabeled, error, searchStatus, loadFiles, clear, search, labelStores, correctStore };
 }

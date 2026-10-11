@@ -1,6 +1,6 @@
 # Demo chat eval: test questions
 
-53 questions about the sample data. The answer keys come from facts planted in the fake data (`scripts/make-sample-data.mjs` and `public/sample-data/fine-print.txt`), so they're known for certain.
+55 questions about the sample data. The answer keys come from facts planted in the fake data (`scripts/make-sample-data.mjs` and `public/sample-data/fine-print.txt`), so they're known for certain.
 
 **How answers are scored** (each 0 to 1; the headline `score` averages the checks that apply):
 
@@ -12,6 +12,13 @@
 - **Win:** for prompt changes, a Sonnet judge compares each new answer with the frozen baseline answer: 1 better, 0.5 tie, 0 worse.
 
 The math itself (totals, averages, sorting) is covered by unit tests (`npm test`). These questions check what only Claude decides: which stores count, and whether it uses the math tool instead of adding numbers itself.
+
+## Store names (added in step 9)
+
+| id | kind | question | must mention | answer key |
+|---|---|---|---|---|
+| blue-bottle-visits | store-names, math | How many times did I go to Blue Bottle? | `\b96\b` | 96 visits across all three spellings: BLUE BOTTLE COFFEE #12 (36), SQ *BLUEBOTTLE OAKLAND (35) and SQ *BLUE BTL 0423 OAKLAND CA (25). |
+| car-spending | store-names, math | How much have I spent on my car? | `8,?150` | $8,150 at Midas Auto Service (2026-06-11), the only car expense. It's labeled Auto, so it's findable even though the description never says "car". |
 
 ## Fine print (added in step 7)
 

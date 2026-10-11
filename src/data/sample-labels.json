@@ -1,0 +1,227 @@
+[
+  {
+    "description": "A CEVICHERIA LISBOA",
+    "merchant": "A Cevicheria",
+    "category": "Dining"
+  },
+  {
+    "description": "ACME DESIGN CO PAYROLL DIR DEP",
+    "merchant": "Acme Design Co",
+    "category": "Income"
+  },
+  {
+    "description": "AMAZON MKTPL*2K4L19",
+    "merchant": "Amazon",
+    "category": "Shopping"
+  },
+  {
+    "description": "AMAZON.COM*HG7YT",
+    "merchant": "Amazon",
+    "category": "Shopping"
+  },
+  {
+    "description": "AMZN Mktp US*RT5Q2",
+    "merchant": "Amazon",
+    "category": "Shopping"
+  },
+  {
+    "description": "APPLE.COM/BILL ICLOUD",
+    "merchant": "Apple iCloud",
+    "category": "Software & services"
+  },
+  {
+    "description": "BLUE BOTTLE COFFEE #12",
+    "merchant": "Blue Bottle Coffee",
+    "category": "Coffee"
+  },
+  {
+    "description": "CON ED OF NY ONLINE PMT",
+    "merchant": "Con Edison",
+    "category": "Utilities & internet"
+  },
+  {
+    "description": "CVS/PHARMACY #04412",
+    "merchant": "CVS Pharmacy",
+    "category": "Health & fitness"
+  },
+  {
+    "description": "DOORDASH*SWEETGREEN",
+    "merchant": "DoorDash",
+    "category": "Food delivery"
+  },
+  {
+    "description": "DOORDASH*THAI VILLA",
+    "merchant": "DoorDash",
+    "category": "Food delivery"
+  },
+  {
+    "description": "EQUINOX BROOKLYN HTS",
+    "merchant": "Equinox",
+    "category": "Health & fitness"
+  },
+  {
+    "description": "FOREIGN TRANSACTION FEE",
+    "merchant": "Foreign Transaction Fee",
+    "category": "Fees & interest"
+  },
+  {
+    "description": "HOTEL ALFAMA LISBOA",
+    "merchant": "Hotel Alfama",
+    "category": "Travel"
+  },
+  {
+    "description": "INTEREST CHARGE ON PURCHASES",
+    "merchant": "Interest Charge",
+    "category": "Fees & interest"
+  },
+  {
+    "description": "JOE'S CAFE 0098",
+    "merchant": "Joe's Cafe",
+    "category": "Coffee"
+  },
+  {
+    "description": "LATE PAYMENT FEE",
+    "merchant": "Late Payment Fee",
+    "category": "Fees & interest"
+  },
+  {
+    "description": "MIDAS AUTO SERVICE #2214",
+    "merchant": "Midas",
+    "category": "Auto"
+  },
+  {
+    "description": "MONTHLY MAINTENANCE FEE",
+    "merchant": "Monthly Maintenance Fee",
+    "category": "Fees & interest"
+  },
+  {
+    "description": "MTA*NYCT PAYGO",
+    "merchant": "MTA",
+    "category": "Transportation"
+  },
+  {
+    "description": "NETFLIX.COM",
+    "merchant": "Netflix",
+    "category": "Entertainment"
+  },
+  {
+    "description": "NYTIMES DIGITAL",
+    "merchant": "The New York Times",
+    "category": "Software & services"
+  },
+  {
+    "description": "OMNY MTA NEW YORK",
+    "merchant": "MTA",
+    "category": "Transportation"
+  },
+  {
+    "description": "OVERDRAFT FEE",
+    "merchant": "Overdraft Fee",
+    "category": "Fees & interest"
+  },
+  {
+    "description": "PASTEIS DE BELEM LISBOA",
+    "merchant": "Pastéis de Belém",
+    "category": "Dining"
+  },
+  {
+    "description": "PAYMENT THANK YOU - WEB",
+    "merchant": "Card Payment",
+    "category": "Transfers & card payments"
+  },
+  {
+    "description": "SPECTRUM INTERNET AUTOPAY",
+    "merchant": "Spectrum",
+    "category": "Utilities & internet"
+  },
+  {
+    "description": "SPOTIFY USA",
+    "merchant": "Spotify",
+    "category": "Entertainment"
+  },
+  {
+    "description": "SQ *BLUE BTL 0423 OAKLAND CA",
+    "merchant": "Blue Bottle Coffee",
+    "category": "Coffee"
+  },
+  {
+    "description": "SQ *BLUEBOTTLE OAKLAND",
+    "merchant": "Blue Bottle Coffee",
+    "category": "Coffee"
+  },
+  {
+    "description": "STARBUCKS #0912 NEW YORK",
+    "merchant": "Starbucks",
+    "category": "Coffee"
+  },
+  {
+    "description": "STARBUCKS STORE 08812",
+    "merchant": "Starbucks",
+    "category": "Coffee"
+  },
+  {
+    "description": "SUMMIT CARD AUTOPAY PMT",
+    "merchant": "Summit Card",
+    "category": "Transfers & card payments"
+  },
+  {
+    "description": "TAP AIR PORTUGAL 0472",
+    "merchant": "TAP Air Portugal",
+    "category": "Travel"
+  },
+  {
+    "description": "TIME OUT MARKET LISBOA",
+    "merchant": "Time Out Market",
+    "category": "Dining"
+  },
+  {
+    "description": "TRADER JOE S #548 BROOKLYN",
+    "merchant": "Trader Joe's",
+    "category": "Groceries"
+  },
+  {
+    "description": "TRADER JOES #548",
+    "merchant": "Trader Joe's",
+    "category": "Groceries"
+  },
+  {
+    "description": "TST* JOES CAFE BROOKLYN",
+    "merchant": "Joe's Cafe",
+    "category": "Coffee"
+  },
+  {
+    "description": "UBER *TRIP HELP.UBER.COM",
+    "merchant": "Uber",
+    "category": "Transportation"
+  },
+  {
+    "description": "UBER *TRIP LISBOA",
+    "merchant": "Uber",
+    "category": "Transportation"
+  },
+  {
+    "description": "UBER TRIP 8XK2",
+    "merchant": "Uber",
+    "category": "Transportation"
+  },
+  {
+    "description": "VANGUARD BUY INVESTMENT",
+    "merchant": "Vanguard",
+    "category": "Investing"
+  },
+  {
+    "description": "WHOLE FOODS MKT #102",
+    "merchant": "Whole Foods",
+    "category": "Groceries"
+  },
+  {
+    "description": "WHOLEFDS BKN 10233",
+    "merchant": "Whole Foods",
+    "category": "Groceries"
+  },
+  {
+    "description": "ZELLE TO BROOKLYN HEIGHTS MGMT RENT",
+    "merchant": "Brooklyn Heights Management",
+    "category": "Rent & housing"
+  }
+]
