@@ -5,7 +5,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import { DEMO_MODEL, runAgent, type AgentEvent } from "@/lib/agent";
 import { findSavedAnswer, saveAnswer } from "@/lib/server/answers";
-import { answersVersion, embed, getSampleDatabase } from "@/lib/server/sample-data";
+import { answersVersion } from "@/lib/server/sample-files";
 
 export const maxDuration = 60;
 
@@ -42,6 +42,9 @@ export async function POST(request: Request) {
           send({ type: "saved" });
           saved.forEach(send);
         } else {
+          // Loaded only when needed, so saved answers keep working even if the
+          // embedding library can't load.
+          const { embed, getSampleDatabase } = await import("@/lib/server/sample-data");
           const events: AgentEvent[] = [];
           await runAgent({
             client: new Anthropic(), // reads ANTHROPIC_API_KEY

@@ -251,25 +251,28 @@
     "relevant": "VANGUARD"
   },
   {
-    "id": "no-total-coffee",
+    "id": "total-coffee-this-year",
     "tags": [
-      "rules"
+      "math"
     ],
     "question": "How much did I spend on coffee this year?",
-    "judge": "Does the answer avoid stating a dollar total or sum, and instead list transactions and/or say totals aren't available yet?",
-    "why": "Rule 6: no totals until the math step.",
-    "truth": "Totals aren't supported yet: it should list coffee purchases and say exact totals are coming soon.",
-    "relevant": "BLUE|STARBUCKS|JOE'?S CAFE|JOES CAFE"
+    "must_include": [
+      "863\\.41"
+    ],
+    "relevant": "BLUE|STARBUCKS|JOE'?S CAFE|JOES CAFE",
+    "truth": "$863.41 across 135 coffee purchases in 2026 (January to September). All-time in the statements: $1,146.31 across 180."
   },
   {
-    "id": "no-average-groceries",
+    "id": "average-groceries",
     "tags": [
-      "rules"
+      "math"
     ],
     "question": "What's my average grocery bill?",
-    "judge": "Does the answer avoid stating an average amount, and instead list transactions and/or say averages aren't available yet?",
-    "truth": "Averages aren't supported yet: it should list grocery purchases and say averages are coming soon.",
-    "relevant": "TRADER JOE|WHOLE ?F|WHOLEFDS"
+    "must_include": [
+      "72\\.87"
+    ],
+    "relevant": "TRADER JOE|WHOLE ?F|WHOLEFDS",
+    "truth": "$72.87 on average: 72 grocery trips (Trader Joe's and Whole Foods) totaling $5,246.97."
   },
   {
     "id": "off-topic-poem",
@@ -620,5 +623,94 @@
     "no_citations_ok": true,
     "judge": "There are no tea purchases. Does the answer say it didn't find any, without presenting coffee purchases as tea?",
     "truth": "No tea purchases in the data."
+  },
+  {
+    "id": "lisbon-total",
+    "tags": [
+      "math"
+    ],
+    "question": "How much did my Lisbon trip cost?",
+    "must_include": [
+      "2,?114\\.40|2,?152\\.58"
+    ],
+    "relevant": "LISBOA|TAP AIR|FOREIGN TRANSACTION",
+    "truth": "$2,114.40 for the six Lisbon charges, or $2,152.58 including the five foreign transaction fees ($38.18)."
+  },
+  {
+    "id": "subscriptions-monthly-total",
+    "tags": [
+      "math",
+      "recurring"
+    ],
+    "question": "How much do my subscriptions cost per month in total?",
+    "must_include": [
+      "301\\.97|381\\.96"
+    ],
+    "relevant": "EQUINOX|NETFLIX|SPOTIFY|NYTIMES|ICLOUD|SPECTRUM",
+    "truth": "$301.97 a month (Equinox $265, Netflix $17.99, Spotify $11.99, NYTimes $4.00, iCloud $2.99); $381.96 if Spectrum internet ($79.99) is counted."
+  },
+  {
+    "id": "top-card-month",
+    "tags": [
+      "math",
+      "sorting"
+    ],
+    "question": "Which month did I spend the most on my credit card?",
+    "must_include": [
+      "jul(y)?|2026-07"
+    ],
+    "truth": "July 2026: $3,361.76 on the Summit Card (the Lisbon trip). Next: February 2026 $1,435.52."
+  },
+  {
+    "id": "coffee-spend-compare",
+    "tags": [
+      "math",
+      "comparison"
+    ],
+    "question": "Do I spend more at Blue Bottle or Starbucks?",
+    "must_include": [
+      "625\\.41",
+      "285\\.59"
+    ],
+    "relevant": "BLUE|STARBUCKS",
+    "judge": "Does the answer say more is spent at Blue Bottle than at Starbucks?",
+    "truth": "Blue Bottle: $625.41 over 96 visits (all spellings). Starbucks: $285.59 over 36."
+  },
+  {
+    "id": "uber-total",
+    "tags": [
+      "math"
+    ],
+    "question": "How much have I spent on Uber?",
+    "must_include": [
+      "977\\.36"
+    ],
+    "relevant": "UBER",
+    "truth": "$977.36 over 37 Uber rides (including one in Lisbon)."
+  },
+  {
+    "id": "doordash-average",
+    "tags": [
+      "math"
+    ],
+    "question": "What's my average DoorDash order?",
+    "must_include": [
+      "34\\.67"
+    ],
+    "relevant": "DOORDASH",
+    "truth": "$34.67 on average over 36 DoorDash orders."
+  },
+  {
+    "id": "foreign-fee-total",
+    "tags": [
+      "math",
+      "fees"
+    ],
+    "question": "How much did I pay in foreign transaction fees?",
+    "must_include": [
+      "38\\.18"
+    ],
+    "relevant": "FOREIGN TRANSACTION",
+    "truth": "$38.18 across five fees during the July 2026 Lisbon trip."
   }
 ]

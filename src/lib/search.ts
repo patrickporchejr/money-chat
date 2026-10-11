@@ -92,6 +92,7 @@ export type SearchFilters = {
   account?: string;
   minAmount?: number;
   maxAmount?: number;
+  descriptions?: string[]; // exact descriptions, e.g. the stores a search found
 };
 
 // Turns filters into SQL conditions, adding their values to params.
@@ -106,21 +107,99 @@ function filterConditions(filters: SearchFilters, params: unknown[]) {
   if (filters.account) add("account = ?", filters.account);
   if (filters.minAmount !== undefined) add("amount >= ?", filters.minAmount);
   if (filters.maxAmount !== undefined) add("amount <= ?", filters.maxAmount);
+  if (filters.descriptions?.length) add("description = any(?)", filters.descriptions);
   return where;
 }
 
-// Every transaction matching the filters, newest first. For "what happened
-// around June 11?" questions, where there's no topic to search for.
-export async function listTransactions(db: PGlite, filters: SearchFilters, limit = 200) {
+// How listTransactions orders results. Spending amounts are negative, so the
+// biggest spend is the lowest amount.
+export type ListSort = "newest" | "oldest" | "largest_spend" | "smallest_spend" | "largest_deposit";
+
+const SORTS: Record<ListSort, { where?: string; order: string }> = {
+  newest: { order: "t.date desc, t.id" },
+  oldest: { order: "t.date asc, t.id" },
+  largest_spend: { where: "amount < 0", order: "t.amount asc, t.date desc" },
+  smallest_spend: { where: "amount < 0", order: "t.amount desc, t.date desc" },
+  largest_deposit: { where: "amount > 0", order: "t.amount desc, t.date desc" },
+};
+
+// Every transaction matching the filters, in the chosen order. For questions
+// with no topic to search for ("what happened around June 11?") and for
+// biggest/smallest questions.
+export async function listTransactions(db: PGlite, filters: SearchFilters, limit = 200, sort: ListSort = "newest") {
   const params: unknown[] = [limit];
   const where = filterConditions(filters, params);
+  if (SORTS[sort].where) where.push(SORTS[sort].where!);
   const { rows } = await db.query<Transaction>(
     `select ${SELECT_TRANSACTION} from transactions t
      ${where.length ? `where ${where.join(" and ")}` : ""}
-     order by t.date desc, t.id limit $1`,
+     order by ${SORTS[sort].order} limit $1`,
     params,
   );
   return rows;
+}
+
+export type SummaryGroup = "none" | "description" | "month" | "account" | "category";
+
+export type Summary = {
+  group: string | null; // e.g. "2026-07" when grouped by month; null when not grouped
+  count: number;
+  spent: number; // money out, as a positive number
+  received: number; // money in
+  averageSpend: number | null; // average of the money-out transactions
+  largest: Transaction | null; // biggest single spend in the group
+  latest: Transaction | null;
+};
+
+// Exact counts, totals and averages, done by the database rather than the AI.
+// Rounded to cents. Groups are ordered by most spent.
+export async function summarizeTransactions(
+  db: PGlite,
+  filters: SearchFilters,
+  groupBy: SummaryGroup = "none",
+): Promise<Summary[]> {
+  const params: unknown[] = [];
+  const where = filterConditions(filters, params);
+  const groupSql = {
+    none: "null::text",
+    description: "description",
+    month: "to_char(date, 'YYYY-MM')",
+    account: "account",
+    category: "coalesce(category, 'Uncategorized')",
+  }[groupBy];
+  const { rows } = await db.query<{ group: string | null; count: number; spent: number; received: number; average_spend: number | null; ids: string[] }>(
+    `select ${groupSql} as "group",
+       count(*)::int as count,
+       round(coalesce(-sum(amount) filter (where amount < 0), 0), 2)::float8 as spent,
+       round(coalesce(sum(amount) filter (where amount > 0), 0), 2)::float8 as received,
+       round(-avg(amount) filter (where amount < 0), 2)::float8 as average_spend,
+       array[
+         (array_agg(id order by amount asc) filter (where amount < 0))[1],
+         (array_agg(id order by date desc, id))[1]
+       ] as ids
+     from transactions
+     ${where.length ? `where ${where.join(" and ")}` : ""}
+     group by 1
+     order by spent desc`,
+    params,
+  );
+
+  // Fetch the two example transactions per group so answers can cite them.
+  const ids = [...new Set(rows.flatMap((r) => r.ids).filter(Boolean))];
+  const { rows: examples } = ids.length
+    ? await db.query<Transaction>(`select ${SELECT_TRANSACTION} from transactions t where t.id = any($1)`, [ids])
+    : { rows: [] as Transaction[] };
+  const byId = new Map(examples.map((t) => [t.id, t]));
+
+  return rows.map((r) => ({
+    group: r.group,
+    count: r.count,
+    spent: r.spent,
+    received: r.received,
+    averageSpend: r.average_spend,
+    largest: (r.ids[0] && byId.get(r.ids[0])) || null,
+    latest: (r.ids[1] && byId.get(r.ids[1])) || null,
+  }));
 }
 
 export type SearchResult = Transaction & {

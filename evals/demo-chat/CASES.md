@@ -1,6 +1,6 @@
 # Demo chat eval: test questions
 
-40 questions about the sample data. The answer keys come from facts planted in the fake data (`scripts/make-sample-data.mjs`), so they're known for certain.
+47 questions about the sample data. The answer keys come from facts planted in the fake data (`scripts/make-sample-data.mjs`), so they're known for certain.
 
 **How answers are scored** (each 0 to 1; the headline `score` averages the checks that apply):
 
@@ -11,9 +11,23 @@
 - **Rules:** the judge question (Claude Sonnet 5.5), given the answer key.
 - **Win:** for prompt changes, a Sonnet judge compares each new answer with the frozen baseline answer: 1 better, 0.5 tie, 0 worse.
 
-## Hard questions (new)
+The math itself (totals, averages, sorting) is covered by unit tests (`npm test`). These questions check what only Claude decides: which stores count, and whether it uses the math tool instead of adding numbers itself.
 
-These are expected to fail or partly fail today, so the eval has room to show improvement.
+## Math (added in step 6)
+
+| id | kind | question | must mention | answer key |
+|---|---|---|---|---|
+| total-coffee-this-year | math | How much did I spend on coffee this year? | `863\.41` | $863.41 across 135 coffee purchases in 2026 (January to September). All-time in the statements: $1,146.31 across 180. |
+| average-groceries | math | What's my average grocery bill? | `72\.87` | $72.87 on average: 72 grocery trips (Trader Joe's and Whole Foods) totaling $5,246.97. |
+| lisbon-total | math | How much did my Lisbon trip cost? | `2,?114\.40|2,?152\.58` | $2,114.40 for the six Lisbon charges, or $2,152.58 including the five foreign transaction fees ($38.18). |
+| subscriptions-monthly-total | math, recurring | How much do my subscriptions cost per month in total? | `301\.97|381\.96` | $301.97 a month (Equinox $265, Netflix $17.99, Spotify $11.99, NYTimes $4.00, iCloud $2.99); $381.96 if Spectrum internet ($79.99) is counted. |
+| top-card-month | math, sorting | Which month did I spend the most on my credit card? | `jul(y)?|2026-07` | July 2026: $3,361.76 on the Summit Card (the Lisbon trip). Next: February 2026 $1,435.52. |
+| coffee-spend-compare | math, comparison | Do I spend more at Blue Bottle or Starbucks? | `625\.41`, `285\.59`<br>judge: Does the answer say more is spent at Blue Bottle than at Starbucks? | Blue Bottle: $625.41 over 96 visits (all spellings). Starbucks: $285.59 over 36. |
+| uber-total | math | How much have I spent on Uber? | `977\.36` | $977.36 over 37 Uber rides (including one in Lisbon). |
+| doordash-average | math | What's my average DoorDash order? | `34\.67` | $34.67 on average over 36 DoorDash orders. |
+| foreign-fee-total | math, fees | How much did I pay in foreign transaction fees? | `38\.18` | $38.18 across five fees during the July 2026 Lisbon trip. |
+
+## Hard questions
 
 | id | kind | question | must mention | answer key |
 |---|---|---|---|---|
@@ -53,8 +67,6 @@ These are expected to fail or partly fail today, so the eval has room to show im
 | gym | recurring | Do I have a gym membership? | `equinox`, `265` | Yes: Equinox Brooklyn Heights, $265 on the 1st of each month. |
 | streaming | recurring | Which streaming services do I pay for? | `netflix`, `spotify` | Netflix ($17.99) and Spotify ($11.99). |
 | investing-paused | recurring | Am I still investing every month? | `vanguard`<br>judge: Does the answer say the monthly investment stopped or paused (the last one was in May 2026)? | $1,000/month to Vanguard until 2026-05-25; no investment since (paused June-September 2026). |
-| no-total-coffee | rules | How much did I spend on coffee this year? | -<br>judge: Does the answer avoid stating a dollar total or sum, and instead list transactions and/or say totals aren't available yet? | Totals aren't supported yet: it should list coffee purchases and say exact totals are coming soon. |
-| no-average-groceries | rules | What's my average grocery bill? | -<br>judge: Does the answer avoid stating an average amount, and instead list transactions and/or say averages aren't available yet? | Averages aren't supported yet: it should list grocery purchases and say averages are coming soon. |
 | off-topic-poem | rules | Write me a poem about the ocean. | -<br>judge: Does the answer decline to write the poem and say it only helps with questions about the statements? | Off topic: it should decline and say it only helps with the statements. |
 | off-topic-stocks | rules | Should I buy Tesla stock? | -<br>judge: Does the answer avoid giving investment advice, and say it only helps with questions about the statements? | Off topic and investment advice: it should decline and say it only helps with the statements. |
 | absent-disney | absence | How much do I pay for Disney+? | -<br>judge: There is no Disney+ charge in the data. Does the answer say it didn't find one, without inventing a price or charge? | There is no Disney+ charge. |

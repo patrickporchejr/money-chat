@@ -6,7 +6,15 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { PGlite } from "@electric-sql/pglite";
 import { z } from "zod";
-import { findRecurringCharges, listTransactions, searchTransactions } from "@/lib/search";
+import {
+  findRecurringCharges,
+  listTransactions,
+  searchTransactions,
+  summarizeTransactions,
+  type ListSort,
+  type SearchFilters,
+  type Summary,
+} from "@/lib/search";
 import type { Transaction } from "@/lib/transactions";
 
 export const DEMO_MODEL = "claude-haiku-5-5";
@@ -29,14 +37,36 @@ export type AgentEvent =
   | { type: "error"; message: string }
   | { type: "saved" }; // this answer was saved earlier, so it cost nothing
 
-const SearchInput = z.object({
-  query: z.string().max(200).optional(),
+const Filters = z.object({
   date_from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   date_to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   account: z.string().optional(),
   min_amount: z.number().optional(),
   max_amount: z.number().optional(),
+  descriptions: z.array(z.string()).max(50).optional(),
 });
+const SORTS = ["newest", "oldest", "largest_spend", "smallest_spend", "largest_deposit"] as const;
+const SearchInput = Filters.extend({
+  query: z.string().max(200).optional(),
+  sort: z.enum(SORTS).optional(),
+});
+const SummarizeInput = Filters.extend({
+  group_by: z.enum(["none", "description", "month", "account", "category"]).optional(),
+});
+
+// The filters both tools share, as JSON Schema for Claude.
+const FILTER_PROPERTIES = {
+  date_from: { type: "string", description: "Earliest date, YYYY-MM-DD." },
+  date_to: { type: "string", description: "Latest date, YYYY-MM-DD." },
+  account: { type: "string", description: "Exact account name." },
+  min_amount: { type: "number", description: "Smallest amount, e.g. -100 to skip anything over $100 spent." },
+  max_amount: { type: "number", description: "Largest amount, e.g. 0 for money out only." },
+  descriptions: {
+    type: "array",
+    items: { type: "string" },
+    description: "Only these exact descriptions, copied from earlier search results (e.g. every spelling of a store).",
+  },
+};
 
 const TOOLS: Anthropic.Tool[] = [
   {
@@ -54,11 +84,29 @@ const TOOLS: Anthropic.Tool[] = [
           type: "string",
           description: "What to look for, in a few words, e.g. \"coffee\" or \"bank fees\". Leave out to list by filters only.",
         },
-        date_from: { type: "string", description: "Earliest date, YYYY-MM-DD." },
-        date_to: { type: "string", description: "Latest date, YYYY-MM-DD." },
-        account: { type: "string", description: "Exact account name." },
-        min_amount: { type: "number", description: "Smallest amount, e.g. -100 to skip anything over $100 spent." },
-        max_amount: { type: "number", description: "Largest amount, e.g. 0 for money out only." },
+        sort: {
+          type: "string",
+          enum: [...SORTS],
+          description:
+            "Only when the query is left out: the order to list in. largest_spend = biggest charges first, " +
+            "smallest_spend = cheapest charges first. Default newest.",
+        },
+        ...FILTER_PROPERTIES,
+      },
+    },
+  },
+  {
+    name: "summarize_transactions",
+    description:
+      "Exact counts, totals and averages, calculated by the database. Use it for any \"how much\", \"how many\", " +
+      "average or comparison question, instead of adding numbers yourself. First find which stores count with " +
+      "search_transactions, then pass their exact descriptions here. group_by splits the result, e.g. by month or " +
+      "by description to compare stores.",
+    input_schema: {
+      type: "object",
+      properties: {
+        ...FILTER_PROPERTIES,
+        group_by: { type: "string", enum: ["none", "description", "month", "account", "category"] },
       },
     },
   },
@@ -82,7 +130,7 @@ export async function describeData(db: PGlite) {
 
 const PROMPT = `You are Money Chat. You answer questions about the user's bank statements.
 
-The statements in this demo are made-up sample data. Accounts: {accounts}. They cover {first} to {last}. Treat "this year" or "recently" as relative to {last}.
+The statements in this demo are made-up sample data. Accounts: {accounts}. They cover {first} to {last}. Treat today as {today}, so "last month" means the month before that and "this year" means {year}.
 
 How to answer:
 - Look things up with search_transactions before answering. Use the date, account and amount filters when the question mentions them. To see everything around a date (for example, what led to a fee), leave out the query and use only the date filters.
@@ -91,14 +139,25 @@ How to answer:
 - Answer only from what the tools return. If nothing relevant comes back, say so. Never say something doesn't exist just because you didn't find it: say you didn't find it.
 - Your earlier answers in this conversation came from searches you can no longer see. Trust them. If you need their details again, search again rather than taking anything back.
 - Cite every transaction you mention with its reference in square brackets, one per bracket, like [T3] or [T3][T4].
-- You can't add up totals or averages yet. If asked for one, list the matching transactions instead and say exact totals are coming soon.
+- For totals, averages, counts or comparisons, never do the math yourself. First search to find the exact descriptions that count (for coffee: every spelling of every coffee shop), then use summarize_transactions with those descriptions and any dates. Count generously: anything the question plausibly covers belongs in (a café counts as coffee). Report its numbers exactly, and say what was included.
+- For biggest, smallest, cheapest or most expensive, use search_transactions without a query, with a sort and filters (descriptions, account, dates).
 - Keep it short: one or two sentences, then at most 8 transactions as a list. Plain text only: no headings or bold. Start list items with "- ".
 - Only help with questions about these statements. For anything else, say that's all you can help with.`;
 
+// The demo's "today": the first day after the statements' last month, so
+// "last month" means the most recent full month of data. 2026-09-28 -> 2026-10-01.
+export function demoToday(lastDate: string) {
+  const [year, month] = lastDate.split("-").map(Number);
+  return month === 12 ? `${year + 1}-01-01` : `${year}-${String(month + 1).padStart(2, "0")}-01`;
+}
+
 function systemPrompt(data: { accounts: string[]; first: string; last: string }) {
+  const today = demoToday(data.last);
   return PROMPT.replace("{accounts}", data.accounts.join(", "))
     .replace("{first}", data.first)
-    .replaceAll("{last}", data.last);
+    .replace("{last}", data.last)
+    .replace("{today}", today)
+    .replace("{year}", today.slice(0, 4));
 }
 
 // Everything that shapes an answer. Saved answers record a fingerprint of this
@@ -154,19 +213,32 @@ export async function runAgent({
     return `${charges.length} recurring charges:\n\n${blocks.join("\n\n")}`;
   }
 
+  async function summarize(input: z.infer<typeof SummarizeInput>) {
+    const groups = await summarizeTransactions(db, toFilters(input), input.group_by ?? "none");
+    if (groups.length === 0) return "No transactions match, so nothing to add up.";
+    const line = (g: Summary) =>
+      [
+        `${g.group ?? "All matching"}: ${g.count} transaction${g.count === 1 ? "" : "s"}`,
+        g.spent ? `spent $${g.spent.toFixed(2)}` : "",
+        g.received ? `received $${g.received.toFixed(2)}` : "",
+        g.averageSpend != null ? `average spend $${g.averageSpend.toFixed(2)}` : "",
+        g.largest ? `largest ${cite(g.largest)} ($${(-g.largest.amount).toFixed(2)} on ${g.largest.date})` : "",
+        g.latest ? `latest ${cite(g.latest)} (${g.latest.date})` : "",
+      ]
+        .filter(Boolean)
+        .join(", ");
+    return `Exact figures from the database${groups.length > 1 ? `, ${groups.length} groups, most spent first` : ""}:\n` +
+      groups.slice(0, 24).map(line).join("\n");
+  }
+
   async function search(input: z.infer<typeof SearchInput>) {
-    const filters = {
-      dateFrom: input.date_from,
-      dateTo: input.date_to,
-      account: input.account,
-      minAmount: input.min_amount,
-      maxAmount: input.max_amount,
-    };
+    const filters = toFilters(input);
     if (!input.query?.trim()) {
-      // No topic: list everything that matches the filters, by date.
-      const rows = await listTransactions(db, filters, 60);
+      // No topic: list everything that matches the filters, in the chosen order.
+      const sort: ListSort = input.sort ?? "newest";
+      const rows = await listTransactions(db, filters, 60, sort);
       if (rows.length === 0) return "No transactions match those filters.";
-      return `${rows.length} transactions${rows.length === 60 ? " (the latest 60)" : ""}, newest first:\n` +
+      return `${rows.length} transactions${rows.length === 60 ? " (the first 60)" : ""}, sorted ${sort.replace("_", " ")}:\n` +
         rows.map((t) => `${cite(t)} | ${t.date} | ${t.description} | ${t.amount.toFixed(2)} | ${t.account}`).join("\n");
     }
 
@@ -230,12 +302,22 @@ export async function runAgent({
         results.push({ type: "tool_result", tool_use_id: call.id, content: await recurring() });
         continue;
       }
+      if (call.name === "summarize_transactions") {
+        const input = SummarizeInput.safeParse(readInput(call));
+        if (!input.success) {
+          results.push({ type: "tool_result", tool_use_id: call.id, is_error: true, content: "Invalid tool call." });
+          continue;
+        }
+        onEvent({ type: "search", query: `totals: ${describeFilters(input.data)}` });
+        results.push({ type: "tool_result", tool_use_id: call.id, content: await summarize(input.data) });
+        continue;
+      }
       const input = SearchInput.safeParse(readInput(call));
       if (call.name !== "search_transactions" || !input.success) {
         results.push({ type: "tool_result", tool_use_id: call.id, is_error: true, content: "Invalid tool call." });
         continue;
       }
-      onEvent({ type: "search", query: input.data.query?.trim() || describeFilters(input.data) });
+      onEvent({ type: "search", query: input.data.query?.trim() || `list: ${describeFilters(input.data)}` });
       results.push({ type: "tool_result", tool_use_id: call.id, content: await search(input.data) });
     }
     // All results go back in one message, so Claude can keep searching in parallel.
@@ -256,11 +338,32 @@ function readInput(call: Anthropic.ToolUseBlock): unknown {
   }
 }
 
-// For the "Searched for ..." line when Claude lists by filters only.
-function describeFilters(input: z.infer<typeof SearchInput>) {
+// The tools' snake_case inputs as the search module's filters.
+function toFilters(input: z.infer<typeof Filters>): SearchFilters {
+  return {
+    dateFrom: input.date_from,
+    dateTo: input.date_to,
+    account: input.account,
+    minAmount: input.min_amount,
+    maxAmount: input.max_amount,
+    descriptions: input.descriptions,
+  };
+}
+
+// For the "Searched for ..." line when Claude lists or totals by filters.
+export function describeFilters(input: z.infer<typeof Filters> & { sort?: string }) {
+  const stores = input.descriptions ?? [];
   const parts = [
-    input.date_from && input.date_to ? `${input.date_from} to ${input.date_to}` : input.date_from ? `from ${input.date_from}` : input.date_to ? `until ${input.date_to}` : "",
+    stores.length ? (stores.length <= 2 ? stores.join(" + ") : `${stores.length} stores`) : "",
+    input.date_from && input.date_to
+      ? `${input.date_from} to ${input.date_to}`
+      : input.date_from
+        ? `from ${input.date_from}`
+        : input.date_to
+          ? `until ${input.date_to}`
+          : "",
     input.account ?? "",
+    input.sort && input.sort !== "newest" ? input.sort.replace("_", " ") : "",
   ].filter(Boolean);
-  return parts.length ? `everything ${parts.join(", ")}` : "everything";
+  return parts.length ? parts.join(", ") : "everything";
 }

@@ -7,7 +7,8 @@ import { writeFileSync } from "node:fs";
 import Anthropic from "@anthropic-ai/sdk";
 import { DEMO_MODEL, runAgent, type AgentEvent } from "@/lib/agent";
 import { normalizeQuestion, type SavedAnswers } from "@/lib/server/answers";
-import { answersVersion, embed, getSampleDatabase } from "@/lib/server/sample-data";
+import { embed, getSampleDatabase } from "@/lib/server/sample-data";
+import { answersVersion } from "@/lib/server/sample-files";
 import { SUGGESTED_QUESTIONS } from "@/lib/suggested-questions";
 
 const OUT = "src/data/saved-answers.json";

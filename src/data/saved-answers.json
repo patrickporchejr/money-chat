@@ -1,5 +1,5 @@
 {
-  "version": "f7125fe89233",
+  "version": "53abfc12b5f1",
   "answers": {
     "what subscriptions am i paying for": [
       {
@@ -233,131 +233,183 @@
       },
       {
         "type": "text",
-        "text": " are the rec"
+        "text": " look"
       },
       {
         "type": "text",
-        "text": "urring sub"
+        "text": " like your"
       },
       {
         "type": "text",
-        "text": "scri"
+        "text": " subscriptions and"
       },
       {
         "type": "text",
-        "text": "ptions I found. Equin"
+        "text": " memberships,"
       },
       {
         "type": "text",
-        "text": "ox, Spectrum,"
+        "text": " based on the recurring charges"
       },
       {
         "type": "text",
-        "text": " and Netflix look"
+        "text": " found"
       },
       {
         "type": "text",
-        "text": " active through September "
+        "text": ": Net"
       },
       {
         "type": "text",
-        "text": "2026, and the"
+        "text": "flix at"
       },
       {
         "type": "text",
-        "text": " Vanguard investment st"
+        "text": " $17.99/"
       },
       {
         "type": "text",
-        "text": "opped after"
+        "text": "month [T13"
       },
       {
         "type": "text",
-        "text": " May 2026."
+        "text": "], Spotify at $11"
       },
       {
         "type": "text",
-        "text": "\n\n- Equinox Br"
+        "text": ".99/month [T19],"
       },
       {
         "type": "text",
-        "text": "ooklyn Heights,"
+        "text": " NYTimes at $4"
       },
       {
         "type": "text",
-        "text": " $265/month:"
+        "text": ".00/month [T22"
       },
       {
         "type": "text",
-        "text": " latest char"
+        "text": "], i"
       },
       {
         "type": "text",
-        "text": "ge [T7]\n-"
+        "text": "Cloud at $2.99"
       },
       {
         "type": "text",
-        "text": " Spectrum Internet,"
+        "text": "/month [T25], and"
       },
       {
         "type": "text",
-        "text": " $79.99/month: lat"
+        "text": " Equinox"
       },
       {
         "type": "text",
-        "text": "est charge [T10]"
+        "text": " Brooklyn Heights"
       },
       {
         "type": "text",
-        "text": "\n- Netflix, $17"
+        "text": " at $265/month [T7"
       },
       {
         "type": "text",
-        "text": ".99/month: latest char"
+        "text": "]. Spectrum"
       },
       {
         "type": "text",
-        "text": "ge [T13]\n-"
+        "text": " Internet at $79.99/"
       },
       {
         "type": "text",
-        "text": " Spotify, $11.99"
+        "text": "month ["
       },
       {
         "type": "text",
-        "text": "/month: latest charge ["
+        "text": "T10] is a rec"
       },
       {
         "type": "text",
-        "text": "T19]\n- NYT"
+        "text": "urring bill r"
       },
       {
         "type": "text",
-        "text": "imes Digital, $4"
+        "text": "ather than a subscription."
       },
       {
         "type": "text",
-        "text": "."
+        "text": "\n\n-"
       },
       {
         "type": "text",
-        "text": "00/month: latest charge"
+        "text": " Netflix: $17."
       },
       {
         "type": "text",
-        "text": " [T22]\n-"
+        "text": "99/month [T13]"
       },
       {
         "type": "text",
-        "text": " Apple iCloud, $"
+        "text": "\n- Spotify: $11"
       },
       {
         "type": "text",
-        "text": "2.99/month: latest"
+        "text": ".99/month [T19]"
       },
       {
         "type": "text",
-        "text": " charge [T25]"
+        "text": "\n- NYTimes"
+      },
+      {
+        "type": "text",
+        "text": " Digital: $4.00/"
+      },
+      {
+        "type": "text",
+        "text": "month [T22]\n- i"
+      },
+      {
+        "type": "text",
+        "text": "Cloud ("
+      },
+      {
+        "type": "text",
+        "text": "Apple):"
+      },
+      {
+        "type": "text",
+        "text": " $2.99/month [T"
+      },
+      {
+        "type": "text",
+        "text": "25]\n- Equinox"
+      },
+      {
+        "type": "text",
+        "text": " Brooklyn He"
+      },
+      {
+        "type": "text",
+        "text": "ights g"
+      },
+      {
+        "type": "text",
+        "text": "ym: $265/month [T"
+      },
+      {
+        "type": "text",
+        "text": "7]\n- Spectr"
+      },
+      {
+        "type": "text",
+        "text": "um Internet aut"
+      },
+      {
+        "type": "text",
+        "text": "opay: $79.99/"
+      },
+      {
+        "type": "text",
+        "text": "month [T10]"
       }
     ],
     "where do i buy coffee": [
@@ -367,7 +419,7 @@
       },
       {
         "type": "search",
-        "query": "starbucks coffee shop"
+        "query": "starbucks coffee shop espresso"
       },
       {
         "type": "sources",
@@ -611,140 +663,24 @@
             "description": "AMZN Mktp US*RT5Q2",
             "amount": -41.68,
             "category": "Shopping"
-          },
-          "T31": {
-            "id": "Summit Card-409",
-            "account": "Summit Card",
-            "date": "2026-06-18",
-            "description": "TRADER JOES #548",
-            "amount": -79.72,
-            "category": "Groceries"
-          },
-          "T32": {
-            "id": "Summit Card-378",
-            "account": "Summit Card",
-            "date": "2026-06-01",
-            "description": "TRADER JOES #548",
-            "amount": -101.99,
-            "category": "Groceries"
-          },
-          "T33": {
-            "id": "Summit Card-371",
-            "account": "Summit Card",
-            "date": "2026-05-25",
-            "description": "TRADER JOES #548",
-            "amount": -91.62,
-            "category": "Groceries"
           }
         }
       },
       {
         "type": "text",
-        "text": "You"
+        "text": "You bu"
       },
       {
         "type": "text",
-        "text": " buy coffee at Star"
+        "text": "y coffee m"
       },
       {
         "type": "text",
-        "text": "bucks, Blue"
+        "text": "ostly at Starbucks"
       },
       {
         "type": "text",
-        "text": " Bottle Coffee and"
-      },
-      {
-        "type": "text",
-        "text": " Joe's Cafe"
-      },
-      {
-        "type": "text",
-        "text": ", all on your"
-      },
-      {
-        "type": "text",
-        "text": " Summit Card. Your"
-      },
-      {
-        "type": "text",
-        "text": " most recent purchases were"
-      },
-      {
-        "type": "text",
-        "text": " at Starbucks ["
-      },
-      {
-        "type": "text",
-        "text": "T10], Blue B"
-      },
-      {
-        "type": "text",
-        "text": "ottle [T4] and"
-      },
-      {
-        "type": "text",
-        "text": " Joe's Cafe ["
-      },
-      {
-        "type": "text",
-        "text": "T1].\n\n- "
-      },
-      {
-        "type": "text",
-        "text": "2026-09-28,"
-      },
-      {
-        "type": "text",
-        "text": " Starbucks"
-      },
-      {
-        "type": "text",
-        "text": " Store 08812,"
-      },
-      {
-        "type": "text",
-        "text": " -7.82 [T10"
-      },
-      {
-        "type": "text",
-        "text": "]\n- 2026-09"
-      },
-      {
-        "type": "text",
-        "text": "-27, Blue B"
-      },
-      {
-        "type": "text",
-        "text": "ottle Coffee #12"
-      },
-      {
-        "type": "text",
-        "text": ", -8"
-      },
-      {
-        "type": "text",
-        "text": ".77 [T4]"
-      },
-      {
-        "type": "text",
-        "text": "\n- 2026-09-27"
-      },
-      {
-        "type": "text",
-        "text": ", Joe's Caf"
-      },
-      {
-        "type": "text",
-        "text": "e 0098, -4."
-      },
-      {
-        "type": "text",
-        "text": "21 [T1]\n-"
-      },
-      {
-        "type": "text",
-        "text": " 2026-09-22,"
+        "text": ","
       },
       {
         "type": "text",
@@ -752,27 +688,139 @@
       },
       {
         "type": "text",
-        "text": " Coffee #12, -4"
+        "text": " Coffee and Joe's"
       },
       {
         "type": "text",
-        "text": ".95 [T5]"
+        "text": " Cafe, all on your"
       },
       {
         "type": "text",
-        "text": "\n- 2026-09-08"
+        "text": " Summit Card. The"
       },
       {
         "type": "text",
-        "text": ", Starbucks Store"
+        "text": " most recent vis"
       },
       {
         "type": "text",
-        "text": " 08812, -5.64"
+        "text": "its were"
       },
       {
         "type": "text",
-        "text": " [T11]"
+        "text": " Starbucks"
+      },
+      {
+        "type": "text",
+        "text": " Store 08812 ["
+      },
+      {
+        "type": "text",
+        "text": "T10],"
+      },
+      {
+        "type": "text",
+        "text": " Blue Bottle"
+      },
+      {
+        "type": "text",
+        "text": " Coffee #12 [T"
+      },
+      {
+        "type": "text",
+        "text": "4] and Joe's"
+      },
+      {
+        "type": "text",
+        "text": " Cafe 0098 ["
+      },
+      {
+        "type": "text",
+        "text": "T1]."
+      },
+      {
+        "type": "text",
+        "text": "\n\n- Starbucks"
+      },
+      {
+        "type": "text",
+        "text": " Store 08812,"
+      },
+      {
+        "type": "text",
+        "text": " lat"
+      },
+      {
+        "type": "text",
+        "text": "est on"
+      },
+      {
+        "type": "text",
+        "text": " 2026-09-28 "
+      },
+      {
+        "type": "text",
+        "text": "[T10]\n- Bl"
+      },
+      {
+        "type": "text",
+        "text": "ue Bottle Coff"
+      },
+      {
+        "type": "text",
+        "text": "ee #12, latest on "
+      },
+      {
+        "type": "text",
+        "text": "2026-09-27 ["
+      },
+      {
+        "type": "text",
+        "text": "T4]\n- Joe"
+      },
+      {
+        "type": "text",
+        "text": "'s Cafe 0098"
+      },
+      {
+        "type": "text",
+        "text": ", latest on 2026-"
+      },
+      {
+        "type": "text",
+        "text": "09-27 [T1]"
+      },
+      {
+        "type": "text",
+        "text": "\n- Starbucks #"
+      },
+      {
+        "type": "text",
+        "text": "0912 New York, latest"
+      },
+      {
+        "type": "text",
+        "text": " on 2026-08-16"
+      },
+      {
+        "type": "text",
+        "text": " [T13]\n-"
+      },
+      {
+        "type": "text",
+        "text": " Joe's Cafe"
+      },
+      {
+        "type": "text",
+        "text": " Brooklyn,"
+      },
+      {
+        "type": "text",
+        "text": " latest on 2026-09"
+      },
+      {
+        "type": "text",
+        "text": "-16 [T7]"
       }
     ],
     "why was i charged a $35 fee": [
@@ -782,7 +830,7 @@
       },
       {
         "type": "search",
-        "query": "bank fees overdraft late fee"
+        "query": "overdraft fee charge penalty"
       },
       {
         "type": "sources",
@@ -796,14 +844,6 @@
             "category": null
           },
           "T2": {
-            "id": "Summit Card-212",
-            "account": "Summit Card",
-            "date": "2026-02-16",
-            "description": "LATE PAYMENT FEE",
-            "amount": -29,
-            "category": "Fees"
-          },
-          "T3": {
             "id": "Summit Card-459",
             "account": "Summit Card",
             "date": "2026-07-13",
@@ -811,7 +851,7 @@
             "amount": -2.2,
             "category": "Fees"
           },
-          "T4": {
+          "T3": {
             "id": "Summit Card-454",
             "account": "Summit Card",
             "date": "2026-07-12",
@@ -819,7 +859,7 @@
             "amount": -0.49,
             "category": "Fees"
           },
-          "T5": {
+          "T4": {
             "id": "Summit Card-451",
             "account": "Summit Card",
             "date": "2026-07-11",
@@ -827,7 +867,7 @@
             "amount": -1.45,
             "category": "Fees"
           },
-          "T6": {
+          "T5": {
             "id": "Summit Card-448",
             "account": "Summit Card",
             "date": "2026-07-10",
@@ -835,12 +875,20 @@
             "amount": -0.44,
             "category": "Fees"
           },
-          "T7": {
+          "T6": {
             "id": "Summit Card-445",
             "account": "Summit Card",
             "date": "2026-07-09",
             "description": "FOREIGN TRANSACTION FEE",
             "amount": -33.6,
+            "category": "Fees"
+          },
+          "T7": {
+            "id": "Summit Card-212",
+            "account": "Summit Card",
+            "date": "2026-02-16",
+            "description": "LATE PAYMENT FEE",
+            "amount": -29,
             "category": "Fees"
           },
           "T8": {
@@ -895,7 +943,7 @@
       },
       {
         "type": "search",
-        "query": "everything 2026-06-08 to 2026-06-11, Harbor Bank Checking"
+        "query": "list: 2026-06-08 to 2026-06-11, Harbor Bank Checking"
       },
       {
         "type": "sources",
@@ -909,14 +957,6 @@
             "category": null
           },
           "T2": {
-            "id": "Summit Card-212",
-            "account": "Summit Card",
-            "date": "2026-02-16",
-            "description": "LATE PAYMENT FEE",
-            "amount": -29,
-            "category": "Fees"
-          },
-          "T3": {
             "id": "Summit Card-459",
             "account": "Summit Card",
             "date": "2026-07-13",
@@ -924,7 +964,7 @@
             "amount": -2.2,
             "category": "Fees"
           },
-          "T4": {
+          "T3": {
             "id": "Summit Card-454",
             "account": "Summit Card",
             "date": "2026-07-12",
@@ -932,7 +972,7 @@
             "amount": -0.49,
             "category": "Fees"
           },
-          "T5": {
+          "T4": {
             "id": "Summit Card-451",
             "account": "Summit Card",
             "date": "2026-07-11",
@@ -940,7 +980,7 @@
             "amount": -1.45,
             "category": "Fees"
           },
-          "T6": {
+          "T5": {
             "id": "Summit Card-448",
             "account": "Summit Card",
             "date": "2026-07-10",
@@ -948,12 +988,20 @@
             "amount": -0.44,
             "category": "Fees"
           },
-          "T7": {
+          "T6": {
             "id": "Summit Card-445",
             "account": "Summit Card",
             "date": "2026-07-09",
             "description": "FOREIGN TRANSACTION FEE",
             "amount": -33.6,
+            "category": "Fees"
+          },
+          "T7": {
+            "id": "Summit Card-212",
+            "account": "Summit Card",
+            "date": "2026-02-16",
+            "description": "LATE PAYMENT FEE",
+            "amount": -29,
             "category": "Fees"
           },
           "T8": {
@@ -1008,11 +1056,11 @@
       },
       {
         "type": "text",
-        "text": "The $35"
+        "text": "The"
       },
       {
         "type": "text",
-        "text": " char"
+        "text": " $35 char"
       },
       {
         "type": "text",
@@ -1020,43 +1068,47 @@
       },
       {
         "type": "text",
-        "text": "ee on Harbor B"
+        "text": "ee on"
       },
       {
         "type": "text",
-        "text": "ank Checking on 2026"
+        "text": " Harbor Bank Chec"
       },
       {
         "type": "text",
-        "text": "-06-11 [T1"
+        "text": "king on June"
       },
       {
         "type": "text",
-        "text": "]. The same"
+        "text": " 11, 2026 ["
       },
       {
         "type": "text",
-        "text": " day, an $8,150."
+        "text": "T1]. The same"
       },
       {
         "type": "text",
-        "text": "00 charge at Midas"
+        "text": " day, a"
       },
       {
         "type": "text",
-        "text": " Auto Service #2214"
+        "text": " $8,150."
       },
       {
         "type": "text",
-        "text": " pos"
+        "text": "00 charge at"
       },
       {
         "type": "text",
-        "text": "ted to"
+        "text": " Midas Auto Service"
       },
       {
         "type": "text",
-        "text": " that"
+        "text": " #2214 pos"
+      },
+      {
+        "type": "text",
+        "text": "ted to that"
       },
       {
         "type": "text",
@@ -1072,31 +1124,39 @@
       },
       {
         "type": "text",
-        "text": "ance, so I can't confir"
+        "text": "ance, so I can't conf"
       },
       {
         "type": "text",
-        "text": "m that char"
+        "text": "irm that this"
       },
       {
         "type": "text",
-        "text": "ge ca"
+        "text": " charge caused the over"
       },
       {
         "type": "text",
-        "text": "used the overdraft, but"
+        "text": "draft, but it"
       },
       {
         "type": "text",
-        "text": " it's the"
+        "text": " is the only"
       },
       {
         "type": "text",
-        "text": " likely tr"
+        "text": " large deb"
       },
       {
         "type": "text",
-        "text": "igger."
+        "text": "it around"
+      },
+      {
+        "type": "text",
+        "text": " that date"
+      },
+      {
+        "type": "text",
+        "text": "."
       }
     ],
     "what did i spend in lisbon": [
@@ -1106,7 +1166,7 @@
       },
       {
         "type": "search",
-        "query": "Lisboa Portugal"
+        "query": "Portugal purchases in Lisboa, Portuguese merchants, euro charges"
       },
       {
         "type": "sources",
@@ -1136,22 +1196,14 @@
             "category": "Food & Drink"
           },
           "T4": {
-            "id": "Summit Card-458",
+            "id": "Summit Card-235",
             "account": "Summit Card",
-            "date": "2026-07-13",
-            "description": "A CEVICHERIA LISBOA",
-            "amount": -73.4,
-            "category": "Food & Drink"
+            "date": "2026-02-28",
+            "description": "INTEREST CHARGE ON PURCHASES",
+            "amount": -18.74,
+            "category": "Fees"
           },
           "T5": {
-            "id": "Summit Card-453",
-            "account": "Summit Card",
-            "date": "2026-07-12",
-            "description": "UBER *TRIP LISBOA",
-            "amount": -16.3,
-            "category": "Transportation"
-          },
-          "T6": {
             "id": "Summit Card-450",
             "account": "Summit Card",
             "date": "2026-07-11",
@@ -1159,119 +1211,276 @@
             "amount": -48.2,
             "category": "Food & Drink"
           },
-          "T7": {
-            "id": "Summit Card-547",
+          "T6": {
+            "id": "Summit Card-459",
             "account": "Summit Card",
-            "date": "2026-09-10",
-            "description": "DOORDASH*THAI VILLA",
-            "amount": -38.18,
-            "category": "Food & Drink"
+            "date": "2026-07-13",
+            "description": "FOREIGN TRANSACTION FEE",
+            "amount": -2.2,
+            "category": "Fees"
+          },
+          "T7": {
+            "id": "Summit Card-454",
+            "account": "Summit Card",
+            "date": "2026-07-12",
+            "description": "FOREIGN TRANSACTION FEE",
+            "amount": -0.49,
+            "category": "Fees"
           },
           "T8": {
-            "id": "Summit Card-502",
+            "id": "Summit Card-451",
             "account": "Summit Card",
-            "date": "2026-08-12",
-            "description": "DOORDASH*THAI VILLA",
-            "amount": -35.27,
-            "category": "Food & Drink"
+            "date": "2026-07-11",
+            "description": "FOREIGN TRANSACTION FEE",
+            "amount": -1.45,
+            "category": "Fees"
           },
           "T9": {
-            "id": "Summit Card-485",
+            "id": "Summit Card-448",
             "account": "Summit Card",
-            "date": "2026-08-02",
-            "description": "DOORDASH*THAI VILLA",
-            "amount": -24.45,
+            "date": "2026-07-10",
+            "description": "FOREIGN TRANSACTION FEE",
+            "amount": -0.44,
+            "category": "Fees"
+          },
+          "T10": {
+            "id": "Summit Card-445",
+            "account": "Summit Card",
+            "date": "2026-07-09",
+            "description": "FOREIGN TRANSACTION FEE",
+            "amount": -33.6,
+            "category": "Fees"
+          },
+          "T11": {
+            "id": "Summit Card-453",
+            "account": "Summit Card",
+            "date": "2026-07-12",
+            "description": "UBER *TRIP LISBOA",
+            "amount": -16.3,
+            "category": "Transportation"
+          },
+          "T12": {
+            "id": "Summit Card-458",
+            "account": "Summit Card",
+            "date": "2026-07-13",
+            "description": "A CEVICHERIA LISBOA",
+            "amount": -73.4,
             "category": "Food & Drink"
+          },
+          "T13": {
+            "id": "Summit Card-212",
+            "account": "Summit Card",
+            "date": "2026-02-16",
+            "description": "LATE PAYMENT FEE",
+            "amount": -29,
+            "category": "Fees"
+          }
+        }
+      },
+      {
+        "type": "search",
+        "query": "totals: 7 stores, 2026-07-08 to 2026-07-13"
+      },
+      {
+        "type": "sources",
+        "sources": {
+          "T1": {
+            "id": "Summit Card-443",
+            "account": "Summit Card",
+            "date": "2026-07-08",
+            "description": "TAP AIR PORTUGAL 0472",
+            "amount": -842,
+            "category": "Travel"
+          },
+          "T2": {
+            "id": "Summit Card-444",
+            "account": "Summit Card",
+            "date": "2026-07-09",
+            "description": "HOTEL ALFAMA LISBOA",
+            "amount": -1120,
+            "category": "Travel"
+          },
+          "T3": {
+            "id": "Summit Card-447",
+            "account": "Summit Card",
+            "date": "2026-07-10",
+            "description": "PASTEIS DE BELEM LISBOA",
+            "amount": -14.5,
+            "category": "Food & Drink"
+          },
+          "T4": {
+            "id": "Summit Card-235",
+            "account": "Summit Card",
+            "date": "2026-02-28",
+            "description": "INTEREST CHARGE ON PURCHASES",
+            "amount": -18.74,
+            "category": "Fees"
+          },
+          "T5": {
+            "id": "Summit Card-450",
+            "account": "Summit Card",
+            "date": "2026-07-11",
+            "description": "TIME OUT MARKET LISBOA",
+            "amount": -48.2,
+            "category": "Food & Drink"
+          },
+          "T6": {
+            "id": "Summit Card-459",
+            "account": "Summit Card",
+            "date": "2026-07-13",
+            "description": "FOREIGN TRANSACTION FEE",
+            "amount": -2.2,
+            "category": "Fees"
+          },
+          "T7": {
+            "id": "Summit Card-454",
+            "account": "Summit Card",
+            "date": "2026-07-12",
+            "description": "FOREIGN TRANSACTION FEE",
+            "amount": -0.49,
+            "category": "Fees"
+          },
+          "T8": {
+            "id": "Summit Card-451",
+            "account": "Summit Card",
+            "date": "2026-07-11",
+            "description": "FOREIGN TRANSACTION FEE",
+            "amount": -1.45,
+            "category": "Fees"
+          },
+          "T9": {
+            "id": "Summit Card-448",
+            "account": "Summit Card",
+            "date": "2026-07-10",
+            "description": "FOREIGN TRANSACTION FEE",
+            "amount": -0.44,
+            "category": "Fees"
+          },
+          "T10": {
+            "id": "Summit Card-445",
+            "account": "Summit Card",
+            "date": "2026-07-09",
+            "description": "FOREIGN TRANSACTION FEE",
+            "amount": -33.6,
+            "category": "Fees"
+          },
+          "T11": {
+            "id": "Summit Card-453",
+            "account": "Summit Card",
+            "date": "2026-07-12",
+            "description": "UBER *TRIP LISBOA",
+            "amount": -16.3,
+            "category": "Transportation"
+          },
+          "T12": {
+            "id": "Summit Card-458",
+            "account": "Summit Card",
+            "date": "2026-07-13",
+            "description": "A CEVICHERIA LISBOA",
+            "amount": -73.4,
+            "category": "Food & Drink"
+          },
+          "T13": {
+            "id": "Summit Card-212",
+            "account": "Summit Card",
+            "date": "2026-02-16",
+            "description": "LATE PAYMENT FEE",
+            "amount": -29,
+            "category": "Fees"
           }
         }
       },
       {
         "type": "text",
-        "text": "I found"
+        "text": "You"
       },
       {
         "type": "text",
-        "text": " six char"
+        "text": " spent about $2"
       },
       {
         "type": "text",
-        "text": "ges from"
+        "text": ",114.40 at"
       },
       {
         "type": "text",
-        "text": " July"
+        "text": " Lisbon merchants in"
       },
       {
         "type": "text",
-        "text": " 2026 that mention"
+        "text": " July 2026 (July "
       },
       {
         "type": "text",
-        "text": " Lisbon on"
+        "text": "8–13), not"
       },
       {
         "type": "text",
-        "text": " your"
+        "text": " coun"
       },
       {
         "type": "text",
-        "text": " Summit Card. I can"
+        "text": "ting $"
       },
       {
         "type": "text",
-        "text": "'t total"
+        "text": "38.18 in foreign"
       },
       {
         "type": "text",
-        "text": " them yet, so here"
+        "text": " transaction fees char"
       },
       {
         "type": "text",
-        "text": " they"
+        "text": "ged during the same days"
       },
       {
         "type": "text",
-        "text": " are."
+        "text": ". The bi"
       },
       {
         "type": "text",
-        "text": " Exact totals are"
+        "text": "ggest items"
       },
       {
         "type": "text",
-        "text": " coming soon.\n\n-"
+        "text": " were the"
       },
       {
         "type": "text",
-        "text": " H"
+        "text": " hotel and"
       },
       {
         "type": "text",
-        "text": "otel Alfama L"
+        "text": " the flight."
       },
       {
         "type": "text",
-        "text": "isboa, "
+        "text": "\n\n- Hotel Al"
       },
       {
         "type": "text",
-        "text": "2026-07-09,"
+        "text": "fama Lisbo"
       },
       {
         "type": "text",
-        "text": " $"
+        "text": "a,"
       },
       {
         "type": "text",
-        "text": "1,120."
+        "text": " $1,120."
       },
       {
         "type": "text",
-        "text": "00 [T2]\n-"
+        "text": "00 on"
       },
       {
         "type": "text",
-        "text": " T"
+        "text": " 2026-07-09 "
+      },
+      {
+        "type": "text",
+        "text": "[T2]\n- T"
       },
       {
         "type": "text",
@@ -1279,15 +1488,11 @@
       },
       {
         "type": "text",
-        "text": " fl"
+        "text": ", $842.00 on "
       },
       {
         "type": "text",
-        "text": "ight, 2026-07-"
-      },
-      {
-        "type": "text",
-        "text": "08, $842.00 ["
+        "text": "2026-07-08 ["
       },
       {
         "type": "text",
@@ -1299,15 +1504,19 @@
       },
       {
         "type": "text",
-        "text": "heria Lisboa,"
+        "text": "he"
       },
       {
         "type": "text",
-        "text": " 2026-07-13,"
+        "text": "ria Lisboa, $"
       },
       {
         "type": "text",
-        "text": " $73.40 [T4"
+        "text": "73.40 on 2026"
+      },
+      {
+        "type": "text",
+        "text": "-07-13 [T12"
       },
       {
         "type": "text",
@@ -1315,51 +1524,95 @@
       },
       {
         "type": "text",
-        "text": " Market Lisboa, "
+        "text": " Market Lisbo"
       },
       {
         "type": "text",
-        "text": "2026-07-11, $"
+        "text": "a, $48.20 on"
       },
       {
         "type": "text",
-        "text": "48.20 [T6]"
+        "text": " 2026-07-11 "
       },
       {
         "type": "text",
-        "text": "\n- Pas"
+        "text": "[T5]\n- U"
       },
       {
         "type": "text",
-        "text": "teis de Belem"
+        "text": "ber tr"
       },
       {
         "type": "text",
-        "text": " Lisboa, 2"
+        "text": "ip in"
       },
       {
         "type": "text",
-        "text": "026-07-10, $14"
+        "text": " Lisbon, $16"
       },
       {
         "type": "text",
-        "text": ".50 [T3]"
+        "text": ".30 on 2026-"
       },
       {
         "type": "text",
-        "text": "\n- Uber tr"
+        "text": "07-12 [T11]"
       },
       {
         "type": "text",
-        "text": "ip Lisboa, "
+        "text": "\n- Pasteis de"
       },
       {
         "type": "text",
-        "text": "2026-07-12, $"
+        "text": " Belem Lisboa"
       },
       {
         "type": "text",
-        "text": "16.30 [T5]"
+        "text": ", $14.50 on "
+      },
+      {
+        "type": "text",
+        "text": "2026-07-10 ["
+      },
+      {
+        "type": "text",
+        "text": "T3]\n- Fore"
+      },
+      {
+        "type": "text",
+        "text": "ign transaction fees, five"
+      },
+      {
+        "type": "text",
+        "text": " char"
+      },
+      {
+        "type": "text",
+        "text": "ges tot"
+      },
+      {
+        "type": "text",
+        "text": "aling $38.18,"
+      },
+      {
+        "type": "text",
+        "text": " from 2026-07-09"
+      },
+      {
+        "type": "text",
+        "text": " to 2026-07-"
+      },
+      {
+        "type": "text",
+        "text": "13 [T6"
+      },
+      {
+        "type": "text",
+        "text": "][T7][T8][T"
+      },
+      {
+        "type": "text",
+        "text": "9][T10]"
       }
     ]
   }
