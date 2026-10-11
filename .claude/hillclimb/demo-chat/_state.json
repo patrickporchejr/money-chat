@@ -1,0 +1,54 @@
+{
+  "flow": "demo-chat",
+  "metrics": [
+    {
+      "id": "pass",
+      "label": "Pass",
+      "kind": "binary"
+    },
+    {
+      "id": "facts",
+      "label": "Facts",
+      "kind": "binary"
+    },
+    {
+      "id": "citations",
+      "label": "Citations",
+      "kind": "binary"
+    },
+    {
+      "id": "filters",
+      "label": "Filters",
+      "kind": "binary"
+    },
+    {
+      "id": "rules",
+      "label": "Rules (judge)",
+      "kind": "binary"
+    }
+  ],
+  "perf_fields": [
+    "latency_s",
+    "tool_calls",
+    "words",
+    "cost_usd"
+  ],
+  "prices": {
+    "claude-haiku-5-5": {
+      "in": 0.1,
+      "out": 0.5
+    },
+    "claude-sonnet-5-5": {
+      "in": 2.0,
+      "out": 10.0
+    }
+  },
+  "harness_paths": [
+    "evals/demo-chat/cases.json",
+    "evals/demo-chat/grade.mjs",
+    "src/lib/agent.ts",
+    "src/lib/search.ts",
+    "src/lib/server/sample-data.ts"
+  ],
+  "variants": []
+}
