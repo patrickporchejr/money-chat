@@ -10,6 +10,8 @@ const nextConfig: NextConfig = {
       "./public/sample-data/**/*",
       "./node_modules/onnxruntime-node/package.json",
       "./node_modules/onnxruntime-node/dist/**/*",
+      "./node_modules/onnxruntime-common/package.json",
+      "./node_modules/onnxruntime-common/dist/cjs/**/*",
       // It ships builds for every OS; Vercel servers only need Linux x64.
       "./node_modules/onnxruntime-node/bin/napi-v6/linux/x64/*",
     ],
