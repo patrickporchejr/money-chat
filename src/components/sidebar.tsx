@@ -23,11 +23,13 @@ export function Logo() {
 export function Sidebar({
   view,
   onViewChange,
+  onNewChat,
   loadSampleData,
   upload,
 }: {
   view: View;
   onViewChange: (view: View) => void;
+  onNewChat: () => void;
   loadSampleData: () => void;
   upload: () => void;
 }) {
@@ -36,7 +38,7 @@ export function Sidebar({
       <Logo />
 
       <button
-        onClick={() => onViewChange("chat")}
+        onClick={onNewChat}
         className="flex items-center gap-2 text-sm font-medium text-primary hover:opacity-80"
       >
         <Plus className="size-4" /> New chat
