@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# private data: never commit real statements
+/data
+*.ofx
+*.qfx
+statements/

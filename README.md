@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Money Chat
 
-## Getting Started
+Upload your bank statements and ask questions about your money in plain English.
 
-First, run the development server:
+> "How much did I spend on coffee this year?"
+> "Why was I charged a $35 fee?"
+> "What subscriptions am I paying for?"
+
+**Status:** just getting started. Right now this is a hello world page.
+
+## How your data is kept private
+
+- Your statements stay in your browser. There is no server storing them.
+- You bring your own AI key (Claude). Your questions go straight from your browser to the AI, never through us.
+- Nothing you upload is ever saved to this project or its code.
+
+## How it works
+
+This app uses **RAG** (retrieval-augmented generation). In plain terms: before the AI answers, the app finds the parts of your data that matter and hands them over, so the answer is based on *your* statements and not a guess.
+
+It uses this in four places:
+
+1. **Finding transactions.** "What was that coffee place near work?" The app finds the matching transactions, then the AI answers.
+2. **Sorting into categories.** New transactions get labeled by looking at similar ones you already have. Fix one once, and it learns.
+3. **Reading the fine print.** "Why was I charged a fee?" The app finds the fee *and* the part of the statement that explains it.
+4. **Turning vague questions into exact numbers.** "How much on coffee?" The app works out what counts as coffee, then plain math adds it up.
+
+Totals and averages are always done with plain math, not the AI, so the numbers are exact.
+
+## Run it locally
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Built with
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Next.js, Tailwind CSS, and Claude.
