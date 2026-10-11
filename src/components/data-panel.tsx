@@ -1,5 +1,6 @@
-import { CreditCard, Landmark, Trash2 } from "lucide-react";
+import { CreditCard, Landmark, Loader2, Search, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import type { SearchStatus } from "@/hooks/use-statements";
 import type { Transaction } from "@/lib/transactions";
 
 // "2025-10-01" -> "Oct 2025"
@@ -7,7 +8,15 @@ const monthYear = (isoDate: string) =>
   new Date(isoDate).toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "UTC" });
 
 // Right-hand panel: which statements are loaded, and a button to remove them.
-export function DataPanel({ transactions, onClear }: { transactions: Transaction[]; onClear: () => void }) {
+export function DataPanel({
+  transactions,
+  searchStatus,
+  onClear,
+}: {
+  transactions: Transaction[];
+  searchStatus: SearchStatus;
+  onClear: () => void;
+}) {
   const accounts = [...new Set(transactions.map((t) => t.account))].map((name) => {
     const rows = transactions.filter((t) => t.account === name);
     const dates = rows.map((t) => t.date).sort();
@@ -39,8 +48,10 @@ export function DataPanel({ transactions, onClear }: { transactions: Transaction
         </ul>
       )}
 
+      {searchStatus.state !== "idle" && <SearchStatusLine status={searchStatus} />}
+
       <div className="mt-auto flex flex-col gap-2">
-        <p className="text-xs text-muted-foreground">Stored only in this browser tab.</p>
+        <p className="text-xs text-muted-foreground">Saved in this browser only. Never uploaded.</p>
         <Button
           variant="outline"
           onClick={onClear}
@@ -51,5 +62,21 @@ export function DataPanel({ transactions, onClear }: { transactions: Transaction
         </Button>
       </div>
     </aside>
+  );
+}
+
+function SearchStatusLine({ status }: { status: SearchStatus }) {
+  const text = {
+    downloading: `Downloading search model... ${"percent" in status ? status.percent : 0}%`,
+    indexing: "Getting search ready...",
+    ready: "Search by meaning is ready",
+    error: `Search isn't available: ${"message" in status ? status.message : ""}`,
+  }[status.state as Exclude<SearchStatus["state"], "idle">];
+  const busy = status.state === "downloading" || status.state === "indexing";
+  return (
+    <p className={`flex items-center gap-2 text-xs ${status.state === "error" ? "text-destructive" : "text-muted-foreground"}`}>
+      {busy ? <Loader2 className="size-3.5 animate-spin" /> : <Search className="size-3.5" />}
+      {text}
+    </p>
   );
 }
