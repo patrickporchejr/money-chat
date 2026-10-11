@@ -67,8 +67,8 @@ flowchart LR
 | Piece | Runs in | Choice | Why |
 |---|---|---|---|
 | CSV reading | Browser | `papaparse` + our column matcher | Files never leave the device |
-| Database | Browser | PGlite (Postgres compiled to WASM) with `pgvector`, saved in IndexedDB | Real SQL for exact math, vector search, and Postgres full-text search in one place. The same code runs in Node for the demo |
-| Embeddings | Browser | `transformers.js` with a small model (e.g. `bge-small-en`, 384 dimensions), in a Web Worker | Anthropic has no embeddings API, and this keeps users to one key. About 30 MB, downloaded once and cached |
+| Database | Browser | PGlite (Postgres compiled to WASM) with `pgvector` and `pg_textsearch` (BM25), saved in IndexedDB | Real SQL for exact math, vector search, and keyword search in one place. The same code runs in Node for the demo |
+| Embeddings | Browser | `transformers.js` with `all-MiniLM-L6-v2` (384 dimensions), in a Web Worker | Anthropic has no embeddings API, and this keeps users to one key. About 23 MB, downloaded once and cached. Chosen over `bge-small` after comparing both on the sample data: its scores separate good and bad matches more clearly |
 | AI answers | Claude API | User's key (their data), our key (demo) | Best answer quality, no model downloads |
 
 ### Data model
@@ -78,7 +78,7 @@ transactions (
   id, account, date, description, amount, category,
   merchant,              -- cleaned-up name, e.g. "Blue Bottle Coffee"
   embedding vector(384), -- meaning, for search by meaning
-  search tsvector        -- words, for keyword search
+  search_text text       -- description + category; embedded and BM25-indexed
 )
 
 documents (              -- fine print, split into chunks
@@ -91,14 +91,14 @@ merchant_labels (        -- examples used to label new transactions
 )
 ```
 
-**Chunking.** Each transaction is one chunk. Its embedding text is built from the description, merchant, category, and amount, not just the raw bank string. Fine print is split by section heading, with the heading kept on every chunk.
+**Chunking.** Each transaction is one chunk. Its search text is the description plus the bank's category (e.g. `WHOLEFDS BKN 10233 (Groceries)`), which helped a lot in testing. Identical texts are embedded once: the sample data's 663 transactions have only 45 unique texts. Fine print is split by section heading, with the heading kept on every chunk.
 
 ### Retrieval
 
 Hybrid search, run inside Postgres:
 
 1. **Filter first** on structured fields the model extracts from the question (date range, account, amount range).
-2. **Two rankings** of what's left: vector similarity (`pgvector`, cosine) and keyword match (Postgres full-text `ts_rank`).
+2. **Two rankings** of what's left: vector similarity (`pgvector`, cosine, with a minimum similarity of 0.35) and keyword match (BM25 via `pg_textsearch`, with English stemming).
 3. **Merge** with reciprocal rank fusion, then return the top k with their IDs so answers can cite them.
 
 ### The agent
@@ -152,13 +152,13 @@ We run it before merging changes to search, prompts, or models, and report the s
 Each step is its own pull request, and each one ends with something you can see working.
 
 1. **Load the data.** "Try sample data" or upload CSVs, and see every transaction in a table.
-2. **Search by meaning.** Searching "coffee" finds all the different ways the bank wrote Blue Bottle.
+2. **Search by meaning.** Searching "coffee" finds Starbucks and Joe's Cafe, even though they never say "coffee". ✅
 3. **Chat (sample data).** Ask a question, get an answer that points to the transactions it used.
 4. **Saved answers and limits.** Suggested questions, the answer cache, rate limits.
 5. **Exact math.** "How much did I spend on coffee?" uses RAG to pick the merchants, then adds them up.
 6. **Fine print.** "Why was I charged $35?" finds the fee and the rule.
 7. **Bring your own key.** Use the app with your real statements.
-8. **Auto-categories.** Learn from your corrections.
+8. **Store names and categories.** Clean up messy bank names (`SQ *BLUE BTL 0423` → Blue Bottle Coffee) so search finds them too, and learn from your corrections.
 9. **Quality checks.** A fixed list of questions with known answers, scored automatically, so we can prove changes make it better.
 
 ## What we're not doing

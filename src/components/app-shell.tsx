@@ -5,47 +5,34 @@ import { ChatView } from "@/components/chat-view";
 import { DataPanel } from "@/components/data-panel";
 import { Logo, Sidebar, type View } from "@/components/sidebar";
 import { TransactionsTable } from "@/components/transactions-table";
-import { accountNameFromFile, parseStatement, type Transaction } from "@/lib/transactions";
+import { useStatements } from "@/hooks/use-statements";
 
 const SAMPLE_FILES = ["harbor-bank-checking.csv", "summit-card.csv"];
 
 // The whole app: sidebar on the left, chat or transactions in the middle,
-// "Your data" on the right. Holds the loaded transactions for all three.
+// "Your data" on the right.
 export function AppShell() {
   const [view, setView] = useState<View>("chat");
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const { transactions, error, searchStatus, loadFiles, clear, search } = useStatements();
   const fileInput = useRef<HTMLInputElement>(null);
-
-  // Everything happens in the browser. Files are read here and never uploaded anywhere.
-  function load(files: { name: string; text: string }[]) {
-    try {
-      const all = files.flatMap((f) => parseStatement(f.text, accountNameFromFile(f.name)));
-      all.sort((a, b) => b.date.localeCompare(a.date));
-      setTransactions(all);
-      setError(null);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong reading that file.");
-    }
-  }
 
   async function loadSampleData() {
     const files = await Promise.all(
       SAMPLE_FILES.map(async (name) => ({ name, text: await (await fetch(`/sample-data/${name}`)).text() })),
     );
-    load(files);
+    await loadFiles(files);
   }
 
+  // Files are read here, in the browser, and never uploaded anywhere.
   async function loadUploads(fileList: FileList | null) {
     if (!fileList?.length) return;
-    const files = await Promise.all([...fileList].map(async (f) => ({ name: f.name, text: await f.text() })));
-    load(files);
+    await loadFiles(await Promise.all([...fileList].map(async (f) => ({ name: f.name, text: await f.text() }))));
   }
 
   const actions = {
     loadSampleData,
     upload: () => fileInput.current?.click(),
-    clear: () => setTransactions([]),
+    clear,
   };
 
   return (
@@ -73,11 +60,16 @@ export function AppShell() {
         {view === "chat" ? (
           <ChatView hasData={transactions.length > 0} {...actions} />
         ) : (
-          <TransactionsTable transactions={transactions} {...actions} />
+          <TransactionsTable
+            transactions={transactions}
+            search={search}
+            searchReady={searchStatus.state === "ready"}
+            {...actions}
+          />
         )}
       </main>
 
-      <DataPanel transactions={transactions} onClear={actions.clear} />
+      <DataPanel transactions={transactions} searchStatus={searchStatus} onClear={actions.clear} />
 
       <input
         ref={fileInput}
