@@ -538,7 +538,7 @@ async function main() {
               catch (e) { if (e?.code !== 'ENOENT') throw e; }
             }
           }
-          const g = await withBackoff(() => gradeCase(c, run, ref, ctx), judgeRetry, deadline);
+          const g = await withBackoff(() => gradeCase(c, run, ref), judgeRetry, deadline);
           return { run, g, latency_s };
         })(), args.timeoutS, `${c.id} rep${rep}`);
         const row = {
