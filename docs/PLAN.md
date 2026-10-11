@@ -142,25 +142,28 @@ The server loads the sample CSVs into an in-memory PGlite and embeds them on fir
 
 ### Quality checks (evals)
 
-A fixed list of questions about the sample data, each with the right answer and the transactions that should be found. A script scores:
-- **Retrieval:** did search find the right transactions? (recall@k)
-- **Answers:** is the number or fact correct, and are the citations real?
+`npm run eval` asks the real agent 26 questions about the sample data (`evals/demo-chat/cases.json`, readable in `CASES.md`) and grades every answer:
 
-We run it before merging changes to search, prompts, or models, and report the scores in the PR.
+- **Plain code** checks the facts (patterns each answer must mention), that every `[T#]` citation is real, and that date/account questions only cite matching transactions.
+- **A Claude Sonnet 5.5 judge** checks the rule-following: no totals yet, declines off-topic questions, doesn't invent things that aren't there, doesn't take back earlier answers.
+
+It's built on Anthropic's eval runner (retries, per-question time limit, resume, and a fingerprint of the eval code that has to be approved before it runs). Results land in `.claude/hillclimb/demo-chat/`.
+
+**Baseline:** 52/52 (26 questions × 2 runs), $0.07 per full run, median answer 2.9 s. A perfect score means it's a safety net for now, not a measuring tool: new steps add questions that fail until the feature works.
 
 ## Build order
 
 Each step is its own pull request, and each one ends with something you can see working.
 
-1. **Load the data.** "Try sample data" or upload CSVs, and see every transaction in a table.
+1. **Load the data.** "Try sample data" or upload CSVs, and see every transaction in a table. ✅
 2. **Search by meaning.** Searching "coffee" finds Starbucks and Joe's Cafe, even though they never say "coffee". ✅
 3. **Chat (sample data).** Ask a question, get an answer that points to the transactions it used. ✅
 4. **Saved answers and limits.** Suggested questions, the answer cache, rate limits. ✅
-5. **Exact math.** "How much did I spend on coffee?" uses RAG to pick the merchants, then adds them up.
-6. **Fine print.** "Why was I charged $35?" finds the fee and the rule.
-7. **Bring your own key.** Use the app with your real statements.
-8. **Store names and categories.** Clean up messy bank names (`SQ *BLUE BTL 0423` → Blue Bottle Coffee) so search finds them too, and learn from your corrections.
-9. **Quality checks.** A fixed list of questions with known answers, scored automatically, so we can prove changes make it better.
+5. **Quality checks (evals).** 26 questions with known answers, scored automatically on every change. Moved up from last, so every later step can show before/after scores. ✅
+6. **Exact math.** "How much did I spend on coffee?" uses RAG to pick the merchants, then adds them up. Also sorting ("biggest purchase").
+7. **Fine print.** "Why was I charged $35?" finds the fee and the rule.
+8. **Bring your own key.** Use the app with your real statements.
+9. **Store names and categories.** Clean up messy bank names (`SQ *BLUE BTL 0423` → Blue Bottle Coffee) so search finds them too, and learn from your corrections.
 
 ## What we're not doing
 

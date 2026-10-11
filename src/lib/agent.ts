@@ -107,7 +107,8 @@ export const AGENT_SETTINGS = { DEMO_MODEL, PROMPT, TOOLS, MAX_TOOL_ROUNDS, MAX_
 
 // Runs one answer: Claude searches as many times as it needs, then writes the
 // answer. Streams text as it's written, and tells the caller which
-// transactions the [T#] references point to.
+// transactions the [T#] references point to. Returns the full exchange (for
+// evals: transcripts, token usage, which model answered).
 export async function runAgent({
   client,
   model,
@@ -191,18 +192,22 @@ export async function runAgent({
     return `${results.length} matching transactions from ${groups.size} places${more}:\n\n${shown.join("\n\n")}`;
   }
 
+  const system = systemPrompt(data);
+  const responses: Anthropic.Message[] = [];
+
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
     const stream = client.messages.stream({
       model,
       max_tokens: 4000,
       output_config: { effort: "low" },
-      system: systemPrompt(data),
+      system,
       tools: TOOLS,
       messages,
     });
     stream.on("text", (text) => onEvent({ type: "text", text }));
 
     const message = await stream.finalMessage();
+    responses.push(message);
 
     if (message.stop_reason === "refusal") {
       onEvent({ type: "error", message: "Claude declined to answer that one." });
@@ -237,6 +242,8 @@ export async function runAgent({
     messages.push({ role: "user", content: results });
     onEvent({ type: "sources", sources });
   }
+
+  return { system, messages, responses, sources };
 }
 
 // Tool input streams in as it's written and is parsed on first read. If it

@@ -1,0 +1,191 @@
+[
+  {
+    "id": "coffee-places",
+    "tags": ["lookup", "messy-names"],
+    "question": "Where do I buy coffee?",
+    "must_include": ["blue bottle", "starbucks", "joe'?s cafe"],
+    "why": "Happy path from the exercise. Starbucks and Joe's never say \"coffee\"."
+  },
+  {
+    "id": "grocery-stores",
+    "tags": ["lookup", "messy-names"],
+    "question": "Where do I buy groceries?",
+    "must_include": ["trader joe", "whole foods"],
+    "why": "Whole Foods is also written \"WHOLEFDS BKN\"."
+  },
+  {
+    "id": "paycheck",
+    "tags": ["lookup"],
+    "question": "Who pays me, and how much is each paycheck?",
+    "must_include": ["acme", "2,?750"]
+  },
+  {
+    "id": "rent",
+    "tags": ["lookup"],
+    "question": "How much is my rent and how do I pay it?",
+    "must_include": ["2,?950", "zelle"]
+  },
+  {
+    "id": "food-delivery",
+    "tags": ["lookup"],
+    "question": "Do I order food delivery?",
+    "must_include": ["doordash"]
+  },
+  {
+    "id": "biggest-purchase",
+    "tags": ["lookup", "filters"],
+    "question": "What was my single biggest purchase?",
+    "must_include": ["midas", "8,?150"],
+    "why": "Needs an amount filter; rent and the hotel are big but smaller."
+  },
+  {
+    "id": "late-fee",
+    "tags": ["fees"],
+    "question": "Did I pay any late fees?",
+    "must_include": ["29", "late"]
+  },
+  {
+    "id": "overdraft-cause",
+    "tags": ["fees", "filters"],
+    "question": "Why was I charged a $35 fee?",
+    "must_include": ["overdraft", "midas"],
+    "why": "From the worked example. Needs a list-by-date search to find the same-day repair."
+  },
+  {
+    "id": "maintenance-fee",
+    "tags": ["fees"],
+    "question": "What is the $12 charge on my checking account?",
+    "must_include": ["maintenance"]
+  },
+  {
+    "id": "foreign-fees",
+    "tags": ["fees"],
+    "question": "What foreign transaction fees did I pay?",
+    "must_include": ["33\\.60", "0\\.44", "1\\.45", "0\\.49", "2\\.20"],
+    "why": "All five fees. Catches the earlier bug where Claude saw only 3."
+  },
+  {
+    "id": "lisbon-trip",
+    "tags": ["lookup", "messy-names"],
+    "question": "What did I spend in Lisbon?",
+    "must_include": ["alfama", "tap", "cevicheria", "time out", "uber", "bel[eé]m"],
+    "why": "Bank wrote \"LISBOA\"; earlier versions found only 3 of 6."
+  },
+  {
+    "id": "coffee-september",
+    "tags": ["filters"],
+    "question": "Which coffee shops did I go to in September 2026?",
+    "must_include": ["blue bottle", "starbucks"],
+    "sources_within": { "date_from": "2026-09-01", "date_to": "2026-09-30" },
+    "why": "Every cited transaction must be in September 2026."
+  },
+  {
+    "id": "checking-june",
+    "tags": ["filters"],
+    "question": "What came out of my checking account in June 2026?",
+    "must_include": ["midas", "rent|zelle"],
+    "sources_within": { "date_from": "2026-06-01", "date_to": "2026-06-30", "account": "Harbor Bank Checking" }
+  },
+  {
+    "id": "subscriptions",
+    "tags": ["recurring"],
+    "question": "What subscriptions am I paying for?",
+    "must_include": ["equinox", "netflix", "spotify", "nytimes|new york times", "icloud"],
+    "judge": "Does the answer avoid claiming that something does not exist (for example \"no gym membership\") as a fact? Saying it didn't find something is fine.",
+    "why": "The trap from the exercise: the saved answer once said \"no gym\"."
+  },
+  {
+    "id": "gym",
+    "tags": ["recurring"],
+    "question": "Do I have a gym membership?",
+    "must_include": ["equinox", "265"]
+  },
+  {
+    "id": "streaming",
+    "tags": ["recurring"],
+    "question": "Which streaming services do I pay for?",
+    "must_include": ["netflix", "spotify"]
+  },
+  {
+    "id": "investing-paused",
+    "tags": ["recurring"],
+    "question": "Am I still investing every month?",
+    "must_include": ["vanguard"],
+    "judge": "Does the answer say the monthly investment stopped or paused (the last one was in May 2026)?"
+  },
+  {
+    "id": "no-total-coffee",
+    "tags": ["rules"],
+    "question": "How much did I spend on coffee this year?",
+    "judge": "Does the answer avoid stating a dollar total or sum, and instead list transactions and/or say totals aren't available yet?",
+    "why": "Rule 6: no totals until the math step."
+  },
+  {
+    "id": "no-average-groceries",
+    "tags": ["rules"],
+    "question": "What's my average grocery bill?",
+    "judge": "Does the answer avoid stating an average amount, and instead list transactions and/or say averages aren't available yet?"
+  },
+  {
+    "id": "off-topic-poem",
+    "tags": ["rules"],
+    "question": "Write me a poem about the ocean.",
+    "judge": "Does the answer decline to write the poem and say it only helps with questions about the statements?",
+    "no_citations_ok": true
+  },
+  {
+    "id": "off-topic-stocks",
+    "tags": ["rules"],
+    "question": "Should I buy Tesla stock?",
+    "judge": "Does the answer avoid giving investment advice, and say it only helps with questions about the statements?",
+    "no_citations_ok": true
+  },
+  {
+    "id": "absent-disney",
+    "tags": ["absence"],
+    "question": "How much do I pay for Disney+?",
+    "must_not": ["disney\\+? (is|costs|charges) \\$", "\\$\\d+(\\.\\d\\d)? (a|per) month for disney"],
+    "judge": "There is no Disney+ charge in the data. Does the answer say it didn't find one, without inventing a price or charge?",
+    "no_citations_ok": true
+  },
+  {
+    "id": "absent-tokyo",
+    "tags": ["absence"],
+    "question": "What did I spend on my Tokyo trip?",
+    "judge": "There is no Tokyo trip in the data. Does the answer say it didn't find one, without inventing charges? Mentioning the Lisbon trip as the only trip found is fine.",
+    "no_citations_ok": true
+  },
+  {
+    "id": "followup-trip-fees",
+    "tags": ["follow-up"],
+    "conversation": [
+      { "role": "user", "content": "What did I spend in Lisbon?" },
+      { "role": "assistant", "content": "I found six Lisbon charges in July 2026: TAP Air Portugal, Hotel Alfama Lisboa, Pasteis de Belem, Time Out Market Lisboa, an Uber trip and A Cevicheria. Exact totals are coming soon." },
+      { "role": "user", "content": "Were there any extra fees on that trip?" }
+    ],
+    "must_include": ["foreign transaction", "33\\.60", "2\\.20"],
+    "judge": "Does the answer avoid taking back or contradicting the earlier answer about the six Lisbon charges?",
+    "why": "Earlier, a follow-up \"corrected\" a right answer because Claude couldn't see old searches."
+  },
+  {
+    "id": "followup-latest-coffee",
+    "tags": ["follow-up"],
+    "conversation": [
+      { "role": "user", "content": "Where do I buy coffee?" },
+      { "role": "assistant", "content": "Mostly at Blue Bottle Coffee, plus Starbucks and Joe's Cafe." },
+      { "role": "user", "content": "Which of those did I visit most recently?" }
+    ],
+    "must_include": ["starbucks", "2026-09-28|sep(tember)? 28"],
+    "why": "Starbucks on 2026-09-28 is the latest coffee purchase."
+  },
+  {
+    "id": "followup-gym-day",
+    "tags": ["follow-up", "recurring"],
+    "conversation": [
+      { "role": "user", "content": "What subscriptions am I paying for?" },
+      { "role": "assistant", "content": "Equinox ($265/month), Netflix ($17.99), Spotify ($11.99), NYTimes ($4.00) and iCloud ($2.99)." },
+      { "role": "user", "content": "What day of the month does the gym charge me?" }
+    ],
+    "must_include": ["1st|first|-01\\b|on the 1\\b"]
+  }
+]
