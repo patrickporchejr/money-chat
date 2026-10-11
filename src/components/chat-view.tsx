@@ -138,7 +138,7 @@ export function ChatView({
 
 function Answer({ message }: { message: ChatMessage }) {
   const sources = message.sources ?? {};
-  const cited = [...new Set(message.content.match(/T\d+(?=\])/g) ?? [])].filter((ref) => sources[ref]);
+  const cited = [...new Set(refsIn(message.content))].filter((ref) => sources[ref]);
 
   return (
     <div className="flex max-w-[90%] flex-col gap-2 text-sm">
@@ -181,20 +181,25 @@ function Answer({ message }: { message: ChatMessage }) {
   );
 }
 
+// References look like [T3], or sometimes [T3, T4].
+const REFS = /(\[T\d+(?:,\s*T\d+)*\])/g;
+const refsIn = (text: string) => text.match(REFS)?.flatMap((group) => group.match(/T\d+/g)!) ?? [];
+
 // Turns "[T3]" in the answer into a small chip that shows the transaction on hover.
 function WithCitations({ text, sources }: { text: string; sources: Record<string, Transaction> }) {
-  return text.split(/(\[T\d+\])/g).map((part, i) => {
-    const ref = part.match(/^\[(T\d+)\]$/)?.[1];
-    const t = ref ? sources[ref] : undefined;
-    if (!ref) return <Fragment key={i}>{part}</Fragment>;
-    return (
-      <span
-        key={i}
-        title={t ? `${t.date} · ${t.description} · ${formatMoney(t.amount)} · ${t.account}` : undefined}
-        className="mx-0.5 inline-flex cursor-default items-center rounded bg-primary/10 px-1 align-baseline text-[10px] font-medium text-primary"
-      >
-        {ref}
-      </span>
-    );
+  return text.split(REFS).map((part, i) => {
+    if (!/^\[T\d/.test(part)) return <Fragment key={i}>{part}</Fragment>;
+    return refsIn(part).map((ref) => {
+      const t = sources[ref];
+      return (
+        <span
+          key={`${i}-${ref}`}
+          title={t ? `${t.date} · ${t.description} · ${formatMoney(t.amount)} · ${t.account}` : undefined}
+          className="mx-0.5 inline-flex cursor-default items-center rounded bg-primary/10 px-1 align-baseline text-[10px] font-medium text-primary"
+        >
+          {ref}
+        </span>
+      );
+    });
   });
 }

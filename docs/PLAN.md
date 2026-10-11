@@ -153,7 +153,7 @@ Each step is its own pull request, and each one ends with something you can see 
 
 1. **Load the data.** "Try sample data" or upload CSVs, and see every transaction in a table.
 2. **Search by meaning.** Searching "coffee" finds Starbucks and Joe's Cafe, even though they never say "coffee". ✅
-3. **Chat (sample data).** Ask a question, get an answer that points to the transactions it used.
+3. **Chat (sample data).** Ask a question, get an answer that points to the transactions it used. ✅
 4. **Saved answers and limits.** Suggested questions, the answer cache, rate limits.
 5. **Exact math.** "How much did I spend on coffee?" uses RAG to pick the merchants, then adds them up.
 6. **Fine print.** "Why was I charged $35?" finds the fee and the rule.

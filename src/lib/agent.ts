@@ -12,7 +12,11 @@ import type { Transaction } from "@/lib/transactions";
 export const DEMO_MODEL = "claude-haiku-5-5";
 
 const MAX_TOOL_ROUNDS = 5; // stop runaway loops
-const MAX_ROWS_TO_CLAUDE = 25; // per search; keeps answers focused and cheap
+// Per search, what Claude sees: results grouped by store, so one store with
+// many visits can't crowd out the others.
+const MAX_GROUPS = 15;
+const SHOW_ALL_UP_TO = 6; // stores with more matches show only their latest few
+const LATEST_ROWS = 3;
 
 // One message in the chat as the app stores it: plain text, no tool details.
 export type ChatTurn = { role: "user" | "assistant"; content: string };
@@ -70,9 +74,11 @@ function systemPrompt(data: { accounts: string[]; first: string; last: string })
 The statements in this demo are made-up sample data. Accounts: ${data.accounts.join(", ")}. They cover ${data.first} to ${data.last}. Treat "this year" or "recently" as relative to ${data.last}.
 
 How to answer:
-- Look things up with search_transactions before answering. Search more than once if the question has several parts, and use the date, account and amount filters when the question mentions them.
+- Look things up with search_transactions before answering. Use the date, account and amount filters when the question mentions them.
+- Bank descriptions are short and messy (e.g. "NETFLIX.COM", "TIME OUT MARKET LISBOA"), so one search is rarely enough. Try a few wordings: likely store names, categories, local spellings, and related words. For example, for subscriptions try streaming services, apps, gyms and memberships. Once you find something, search around its dates for related charges.
 - Answer only from what the searches return. If nothing relevant comes back, say so.
-- Cite every transaction you mention with its reference in square brackets, like [T3].
+- Your earlier answers in this conversation came from searches you can no longer see. Trust them. If you need their details again, search again rather than taking anything back.
+- Cite every transaction you mention with its reference in square brackets, one per bracket, like [T3] or [T3][T4].
 - You can't add up totals or averages yet. If asked for one, list the matching transactions instead and say exact totals are coming soon.
 - Keep it short: one or two sentences, then at most 8 transactions as a list. Plain text only: no headings or bold. Start list items with "- ".
 - Only help with questions about these statements. For anything else, say that's all you can help with.`;
@@ -102,7 +108,7 @@ export async function runAgent({
   // would point at the wrong rows, so strip them from the history.
   const messages: Anthropic.MessageParam[] = history.map((turn) => ({
     role: turn.role,
-    content: turn.role === "assistant" ? turn.content.replace(/\s*\[T\d+\]/g, "") : turn.content,
+    content: turn.role === "assistant" ? turn.content.replace(/\s*\[T\d+(?:,\s*T\d+)*\]/g, "") : turn.content,
   }));
 
   const refs = new Map<string, string>(); // transaction id -> "T3"
@@ -122,15 +128,29 @@ export async function runAgent({
       },
       200,
     );
-    const shown = results.slice(0, MAX_ROWS_TO_CLAUDE);
-    const lines = shown.map((t) => {
-      if (!refs.has(t.id)) refs.set(t.id, `T${refs.size + 1}`);
-      const ref = refs.get(t.id)!;
-      sources[ref] = { id: t.id, account: t.account, date: t.date, description: t.description, amount: t.amount, category: t.category };
-      return [ref, t.date, t.description, t.amount.toFixed(2), t.account, t.category ?? "", `matched by ${t.matchedBy.join(" + ")}`].join(" | ");
-    });
     if (results.length === 0) return "No matching transactions.";
-    return `${results.length} matches${results.length > shown.length ? `, showing the best ${shown.length}` : ""}:\n${lines.join("\n")}`;
+
+    // Group by description, keeping the search's ranking order between groups.
+    const groups = new Map<string, typeof results>();
+    for (const t of results) groups.set(t.description, [...(groups.get(t.description) ?? []), t]);
+
+    const shown = [...groups.values()].slice(0, MAX_GROUPS).map((rows) => {
+      const first = rows[0];
+      const dates = rows.map((t) => t.date).sort();
+      const newestFirst = [...rows].sort((a, b) => b.date.localeCompare(a.date));
+      const latest = rows.length <= SHOW_ALL_UP_TO ? newestFirst : newestFirst.slice(0, LATEST_ROWS);
+      const count = latest.length === rows.length ? `${rows.length} match${rows.length === 1 ? "" : "es"}` : `${rows.length} matches (latest ${latest.length} shown)`;
+      const header = `${first.description} (${first.account}${first.category ? `, ${first.category}` : ""}): ${count}, ${dates[0]} to ${dates.at(-1)}, matched by ${first.matchedBy.join(" + ")}`;
+      const lines = latest.map((t) => {
+        if (!refs.has(t.id)) refs.set(t.id, `T${refs.size + 1}`);
+        const ref = refs.get(t.id)!;
+        sources[ref] = { id: t.id, account: t.account, date: t.date, description: t.description, amount: t.amount, category: t.category };
+        return `  ${ref} | ${t.date} | ${t.amount.toFixed(2)}`;
+      });
+      return [header, ...lines].join("\n");
+    });
+    const more = groups.size > MAX_GROUPS ? ` (showing the best ${MAX_GROUPS})` : "";
+    return `${results.length} matching transactions from ${groups.size} places${more}:\n\n${shown.join("\n\n")}`;
   }
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
