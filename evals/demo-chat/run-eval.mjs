@@ -182,7 +182,9 @@ async function runCase(input, ctx) {
     client, model: ctx.model ?? agent.DEMO_MODEL, db, embed: sample.embed,
     history: input.history, onEvent: e => events.push(e),
   });
-  const output = events.filter(e => e.type === 'text').map(e => e.text).join('');
+  // The answer is the text after the last clear-text (notes before searches are dropped).
+  const lastClear = events.map(e => e.type).lastIndexOf('clear-text');
+  const output = events.slice(lastClear + 1).filter(e => e.type === 'text').map(e => e.text).join('');
   const errors = events.filter(e => e.type === 'error').map(e => e.message);
 
   // Transcript: system, the conversation so far, then each Claude call with its tool results.

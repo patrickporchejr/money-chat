@@ -1,6 +1,39 @@
 import type { NextConfig } from "next";
 
+// What the page is allowed to load and talk to (production only; the dev
+// server needs eval). Your statements live in the browser, so this is what
+// keeps them from going anywhere except Anthropic, and only with your own key.
+//   api.anthropic.com      your own key's chat requests
+//   huggingface.co, *.hf.co  the embedding model download (once, then cached)
+//   cdn.jsdelivr.net       the embedding runtime (WebAssembly)
+const CONTENT_SECURITY_POLICY = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net",
+  "connect-src 'self' https://api.anthropic.com https://huggingface.co https://*.huggingface.co https://*.hf.co https://cdn.jsdelivr.net",
+  "worker-src 'self' blob:",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "font-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+].join("; ");
+
 const nextConfig: NextConfig = {
+  async headers() {
+    if (process.env.NODE_ENV !== "production") return [];
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "Content-Security-Policy", value: CONTENT_SECURITY_POLICY },
+          { key: "Referrer-Policy", value: "no-referrer" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+        ],
+      },
+    ];
+  },
   // Load these with plain Node instead of bundling: they ship WASM and native files.
   serverExternalPackages: ["@electric-sql/pglite", "@electric-sql/pglite-pgvector", "@electric-sql/pglite-pg_textsearch"],
   // The demo chat reads the sample CSVs from disk, and the embedding library

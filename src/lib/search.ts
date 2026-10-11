@@ -342,6 +342,18 @@ export async function replaceFinePrint(db: PGlite, chunks: FinePrintChunk[]) {
   });
 }
 
+export async function clearFinePrint(db: PGlite) {
+  await db.query("delete from fine_print");
+}
+
+// Which fine print documents are loaded, and how many paragraphs each has.
+export async function finePrintDocuments(db: PGlite) {
+  const { rows } = await db.query<{ source: string; chunks: number }>(
+    "select source, count(*)::int as chunks from fine_print group by source order by source",
+  );
+  return rows;
+}
+
 export async function finePrintMissingEmbeddings(db: PGlite) {
   const { rows } = await db.query<{ id: string; search_text: string }>(
     "select id, search_text from fine_print where embedding is null order by id",

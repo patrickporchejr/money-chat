@@ -3,7 +3,8 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { ArrowUp, Loader2, Paperclip, Search, Sparkles, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { ChatMessage } from "@/hooks/use-chat";
+import { OwnKeyBar, OwnKeyForm } from "@/components/own-key";
+import type { ChatMessage, ChatTarget } from "@/hooks/use-chat";
 import type { FinePrintChunk } from "@/lib/fine-print";
 import { SUGGESTED_QUESTIONS } from "@/lib/suggested-questions";
 import type { Transaction } from "@/lib/transactions";
@@ -20,17 +21,26 @@ export function ChatView({
   send,
   loadSampleData,
   upload,
+  apiKey,
+  setApiKey,
+  model,
+  setModel,
 }: {
   mode: ChatMode;
   messages: ChatMessage[];
   busy: boolean;
-  send: (question: string) => void;
+  send: (question: string, target: ChatTarget) => void;
   loadSampleData: () => Promise<void>;
   upload: () => void;
+  apiKey: string | null;
+  setApiKey: (key: string | null) => void;
+  model: string;
+  setModel: (model: string) => void;
 }) {
   const [question, setQuestion] = useState("");
   const bottom = useRef<HTMLDivElement>(null);
-  const canAsk = mode !== "own-data" && !busy;
+  const needsKey = mode === "own-data" && !apiKey;
+  const canAsk = !needsKey && !busy;
 
   // Keep the newest text in view while the answer streams in.
   useEffect(() => bottom.current?.scrollIntoView({ block: "end" }), [messages]);
@@ -39,7 +49,7 @@ export function ChatView({
     if (!q.trim() || !canAsk) return;
     if (mode === "no-data") await loadSampleData();
     setQuestion("");
-    send(q.trim());
+    send(q.trim(), mode === "own-data" && apiKey ? { kind: "own", apiKey, model } : { kind: "demo" });
   }
 
   return (
@@ -57,10 +67,12 @@ export function ChatView({
           <p className="max-w-md text-muted-foreground">
             {mode === "sample" && "The sample data is loaded. Pick a question below, or ask your own."}
             {mode === "no-data" && "Pick a question below to try it on sample data, or upload your own CSV statements."}
-            {mode === "own-data" &&
-              "Chatting about your own statements needs your own Claude key, which is coming soon. For now, search them in Transactions, or load the sample data to try the chat."}
+            {needsKey &&
+              "Your statements are loaded. To chat about them, add your own Claude API key. Or load the sample data to try the free demo."}
+            {mode === "own-data" && apiKey && "Ask anything about your statements."}
           </p>
-          {mode !== "sample" && (
+          {needsKey && <OwnKeyForm onKey={setApiKey} />}
+          {mode === "no-data" && (
             <div className="mt-2 flex flex-wrap justify-center gap-2">
               <Button onClick={loadSampleData}>Try sample data</Button>
               <Button variant="outline" onClick={upload}>
@@ -113,8 +125,8 @@ export function ChatView({
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               maxLength={500}
-              disabled={mode === "own-data"}
-              placeholder={mode === "own-data" ? "Coming soon for your own statements" : "Ask about your money..."}
+              disabled={needsKey}
+              placeholder={needsKey ? "Add your key above to start" : "Ask about your money..."}
               className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
             <Button type="submit" size="icon" disabled={!canAsk || !question.trim()} aria-label="Send">
@@ -122,6 +134,7 @@ export function ChatView({
             </Button>
           </form>
         </div>
+        {mode === "own-data" && apiKey && <OwnKeyBar model={model} onModel={setModel} onForget={() => setApiKey(null)} />}
         <p className="mt-2 text-center text-xs text-muted-foreground">
           Answers come from Claude and can be wrong. Check the linked transactions.
         </p>

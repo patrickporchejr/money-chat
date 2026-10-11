@@ -21,6 +21,19 @@ import type { Transaction } from "@/lib/transactions";
 
 export const DEMO_MODEL = "claude-haiku-5-5";
 
+// Models people can pick when they use their own key. They pay for these.
+export const OWN_KEY_MODELS = [
+  { id: "claude-opus-5-5", label: "Opus 5.5 (best)" },
+  { id: "claude-sonnet-5-5", label: "Sonnet 5.5 (balanced)" },
+  { id: "claude-haiku-5-5", label: "Haiku 5.5 (cheapest)" },
+] as const;
+export const OWN_KEY_DEFAULT_MODEL = OWN_KEY_MODELS[0].id;
+
+// Models that support Anthropic's server-side fallback: if a safety check
+// wrongly declines a harmless question, the request is re-run on a fallback
+// model instead of failing.
+const SUPPORTS_FALLBACK = new Set(["claude-opus-5-5", "claude-sonnet-5-5"]);
+
 const MAX_TOOL_ROUNDS = 5; // stop runaway loops
 // Per search, what Claude sees: results grouped by store, so one store with
 // many visits can't crowd out the others.
@@ -34,6 +47,7 @@ export type ChatTurn = { role: "user" | "assistant"; content: string };
 // What the agent streams back while it works.
 export type AgentEvent =
   | { type: "text"; text: string }
+  | { type: "clear-text" } // drop the text so far: it was a note before searching, not the answer
   | { type: "search"; query: string }
   | { type: "sources"; sources: Record<string, Transaction> }
   | { type: "documents"; documents: Record<string, FinePrintChunk> } // what [D1] etc. point to
@@ -145,7 +159,7 @@ export async function describeData(db: PGlite) {
 
 const PROMPT = `You are Money Chat. You answer questions about the user's bank statements.
 
-The statements in this demo are made-up sample data. Accounts: {accounts}. They cover {first} to {last}. Treat today as {today}, so "last month" means the month before that and "this year" means {year}.
+{about} Accounts: {accounts}. They cover {first} to {last}. Treat today as {today}, so "last month" means the month before that and "this year" means {year}.
 
 How to answer:
 - Look things up with search_transactions before answering. Use the date, account and amount filters when the question mentions them. To see everything around a date (for example, what led to a fee), leave out the query and use only the date filters.
@@ -167,9 +181,24 @@ export function demoToday(lastDate: string) {
   return month === 12 ? `${year + 1}-01-01` : `${year}-${String(month + 1).padStart(2, "0")}-01`;
 }
 
-function systemPrompt(data: { accounts: string[]; first: string; last: string }) {
-  const today = demoToday(data.last);
-  return PROMPT.replace("{accounts}", data.accounts.join(", "))
+// Which statements the chat is answering about.
+export type AgentMode = "demo" | "own";
+
+const ABOUT: Record<AgentMode, string> = {
+  demo: "The statements in this demo are made-up sample data.",
+  own: "These are the user's own statements, which they loaded in their browser.",
+};
+
+export function systemPrompt(
+  data: { accounts: string[]; first: string; last: string },
+  mode: AgentMode = "demo",
+  realToday: string = new Date().toISOString().slice(0, 10),
+) {
+  // The demo's data is frozen in time, so "today" follows the data. Real
+  // statements use the real date.
+  const today = mode === "demo" ? demoToday(data.last) : realToday;
+  return PROMPT.replace("{about}", ABOUT[mode])
+    .replace("{accounts}", data.accounts.join(", "))
     .replace("{first}", data.first)
     .replace("{last}", data.last)
     .replace("{today}", today)
@@ -178,7 +207,7 @@ function systemPrompt(data: { accounts: string[]; first: string; last: string })
 
 // Everything that shapes an answer. Saved answers record a fingerprint of this
 // (plus the sample data), so changing any of it retires them automatically.
-export const AGENT_SETTINGS = { DEMO_MODEL, PROMPT, TOOLS, MAX_TOOL_ROUNDS, MAX_GROUPS, SHOW_ALL_UP_TO, LATEST_ROWS };
+export const AGENT_SETTINGS = { DEMO_MODEL, PROMPT, ABOUT, TOOLS, MAX_TOOL_ROUNDS, MAX_GROUPS, SHOW_ALL_UP_TO, LATEST_ROWS };
 
 // Runs one answer: Claude searches as many times as it needs, then writes the
 // answer. Streams text as it's written, and tells the caller which
@@ -191,6 +220,7 @@ export async function runAgent({
   embed,
   history,
   onEvent,
+  mode = "demo",
 }: {
   client: Anthropic;
   model: string;
@@ -198,6 +228,7 @@ export async function runAgent({
   embed: (texts: string[]) => Promise<number[][]>;
   history: ChatTurn[];
   onEvent: (event: AgentEvent) => void;
+  mode?: AgentMode;
 }) {
   const data = await describeData(db);
 
@@ -296,21 +327,31 @@ export async function runAgent({
     return `${results.length} matching transactions from ${groups.size} places${more}:\n\n${shown.join("\n\n")}`;
   }
 
-  const system = systemPrompt(data);
+  const system = systemPrompt(data, mode);
   const responses: Anthropic.Message[] = [];
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
-    const stream = client.messages.stream({
-      model,
-      max_tokens: 4000,
-      output_config: { effort: "low" },
-      system,
-      tools: TOOLS,
-      messages,
-    });
-    stream.on("text", (text) => onEvent({ type: "text", text }));
-
-    const message = await stream.finalMessage();
+    const request = { model, max_tokens: 4000, output_config: { effort: "low" as const }, system, tools: TOOLS, messages };
+    let wroteText = false;
+    const onText = (text: string) => {
+      wroteText = true;
+      onEvent({ type: "text", text });
+    };
+    let message: Anthropic.Message;
+    if (SUPPORTS_FALLBACK.has(model)) {
+      // With a fallback, a wrongly declined question is re-run on another model.
+      const stream = client.beta.messages.stream({
+        ...(request as Anthropic.Beta.MessageCreateParamsStreaming),
+        betas: ["server-side-fallback-2026-07-01"],
+        fallbacks: "default",
+      });
+      stream.on("text", onText);
+      message = (await stream.finalMessage()) as unknown as Anthropic.Message;
+    } else {
+      const stream = client.messages.stream(request);
+      stream.on("text", onText);
+      message = await stream.finalMessage();
+    }
     responses.push(message);
 
     if (message.stop_reason === "refusal") {
@@ -320,6 +361,8 @@ export async function runAgent({
 
     const toolCalls = message.content.filter((b): b is Anthropic.ToolUseBlock => b.type === "tool_use");
     if (toolCalls.length === 0) break; // finished answering
+    // Text written before a search ("Let me check...") isn't part of the answer.
+    if (wroteText) onEvent({ type: "clear-text" });
 
     if (message.stop_reason === "max_tokens") {
       onEvent({ type: "error", message: "The answer ran too long." });

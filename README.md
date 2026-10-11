@@ -8,12 +8,13 @@ Upload your bank statements and ask questions about your money in plain English.
 > "Why was I charged a $35 fee?"
 > "What subscriptions am I paying for?"
 
-**Status:** just getting started. Right now this is a hello world page.
+**Status:** working demo. Try it with the sample data, or upload your own CSV statements and bring your own Claude key.
 
 ## How your data is kept private
 
 - Your statements stay in your browser. There is no server storing them.
-- You bring your own AI key (Claude). Your questions go straight from your browser to the AI, never through us.
+- To chat about your own statements, you bring your own Claude API key. It's kept only in the page's memory (never saved), and your questions go straight from your browser to Anthropic, never through us.
+- The site is locked down so it can only talk to Anthropic and the search model download.
 - Nothing you upload is ever saved to this project or its code.
 
 ## How it works

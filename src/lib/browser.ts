@@ -47,3 +47,10 @@ export function embed(texts: string[]): Promise<number[][]> {
     worker!.postMessage({ id, texts } satisfies EmbedRequest);
   });
 }
+
+// A Claude client that talks to Anthropic straight from this browser, with the
+// user's own key. The key is never stored: it lives only in this page's memory.
+export async function claudeClient(apiKey: string) {
+  const { default: Anthropic } = await import("@anthropic-ai/sdk");
+  return new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
+}

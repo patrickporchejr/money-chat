@@ -7,6 +7,7 @@ import { Logo, Sidebar, type View } from "@/components/sidebar";
 import { TransactionsTable } from "@/components/transactions-table";
 import { useChat } from "@/hooks/use-chat";
 import { useStatements } from "@/hooks/use-statements";
+import { OWN_KEY_DEFAULT_MODEL } from "@/lib/agent";
 import { accountNameFromFile } from "@/lib/transactions";
 
 const SAMPLE_FILES = ["harbor-bank-checking.csv", "summit-card.csv"];
@@ -16,10 +17,13 @@ const SAMPLE_ACCOUNTS = SAMPLE_FILES.map(accountNameFromFile);
 // "Your data" on the right.
 export function AppShell() {
   const [view, setView] = useState<View>("chat");
-  const { transactions, error, searchStatus, loadFiles, clear, search } = useStatements();
+  const { transactions, finePrint, error, searchStatus, loadFiles, clear, search } = useStatements();
   const chat = useChat();
+  // Your own Claude key: held in memory only, never saved. Gone when the tab closes.
+  const [apiKey, setApiKey] = useState<string | null>(null);
+  const [model, setModel] = useState<string>(OWN_KEY_DEFAULT_MODEL);
 
-  // The demo chat only knows the sample data. Your own statements need your own key (later).
+  // The free demo chat only knows the sample data. Your own statements use your own key.
   const chatMode: ChatMode =
     transactions.length === 0
       ? "no-data"
@@ -78,7 +82,7 @@ export function AppShell() {
           <p className="border-b border-destructive/20 bg-destructive/10 px-4 py-2 text-sm text-destructive">{error}</p>
         )}
         {view === "chat" ? (
-          <ChatView mode={chatMode} {...chat} {...actions} />
+          <ChatView mode={chatMode} {...chat} {...actions} apiKey={apiKey} setApiKey={setApiKey} model={model} setModel={setModel} />
         ) : (
           <TransactionsTable
             transactions={transactions}
@@ -89,12 +93,12 @@ export function AppShell() {
         )}
       </main>
 
-      <DataPanel transactions={transactions} searchStatus={searchStatus} onClear={actions.clear} />
+      <DataPanel transactions={transactions} finePrint={finePrint} searchStatus={searchStatus} onClear={actions.clear} />
 
       <input
         ref={fileInput}
         type="file"
-        accept=".csv,text/csv"
+        accept=".csv,text/csv,.txt,text/plain,.md,text/markdown"
         multiple
         hidden
         onChange={(e) => {

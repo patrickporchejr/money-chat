@@ -30,7 +30,8 @@ for (const question of SUGGESTED_QUESTIONS) {
   const errors = events.filter((e) => e.type === "error");
   if (errors.length) throw new Error(`"${question}" failed: ${JSON.stringify(errors)}`);
   result.answers[normalizeQuestion(question)] = events;
-  const text = events.map((e) => (e.type === "text" ? e.text : "")).join("");
+  const lastClear = events.map((e) => e.type).lastIndexOf("clear-text");
+  const text = events.slice(lastClear + 1).map((e) => (e.type === "text" ? e.text : "")).join("");
   console.log(`\n✓ ${question}\n${text}`);
 }
 
