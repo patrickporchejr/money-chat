@@ -2,29 +2,44 @@
   "flow": "demo-chat",
   "metrics": [
     {
-      "id": "pass",
-      "label": "Pass",
-      "kind": "binary"
+      "id": "score",
+      "label": "Score",
+      "kind": "float"
     },
     {
-      "id": "facts",
-      "label": "Facts",
-      "kind": "binary"
+      "id": "win",
+      "label": "Win vs base",
+      "kind": "judge"
+    },
+    {
+      "id": "recall",
+      "label": "Recall",
+      "kind": "float"
+    },
+    {
+      "id": "precision",
+      "label": "Precision",
+      "kind": "float"
     },
     {
       "id": "citations",
       "label": "Citations",
-      "kind": "binary"
+      "kind": "float"
     },
     {
       "id": "filters",
       "label": "Filters",
-      "kind": "binary"
+      "kind": "float"
     },
     {
       "id": "rules",
       "label": "Rules (judge)",
-      "kind": "binary"
+      "kind": "float"
+    },
+    {
+      "id": "pass",
+      "label": "All perfect",
+      "kind": "float"
     }
   ],
   "perf_fields": [
