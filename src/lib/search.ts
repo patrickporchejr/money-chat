@@ -94,6 +94,35 @@ export type SearchFilters = {
   maxAmount?: number;
 };
 
+// Turns filters into SQL conditions, adding their values to params.
+function filterConditions(filters: SearchFilters, params: unknown[]) {
+  const where: string[] = [];
+  const add = (sql: string, value: unknown) => {
+    params.push(value);
+    where.push(sql.replace("?", `$${params.length}`));
+  };
+  if (filters.dateFrom) add("date >= ?", filters.dateFrom);
+  if (filters.dateTo) add("date <= ?", filters.dateTo);
+  if (filters.account) add("account = ?", filters.account);
+  if (filters.minAmount !== undefined) add("amount >= ?", filters.minAmount);
+  if (filters.maxAmount !== undefined) add("amount <= ?", filters.maxAmount);
+  return where;
+}
+
+// Every transaction matching the filters, newest first. For "what happened
+// around June 11?" questions, where there's no topic to search for.
+export async function listTransactions(db: PGlite, filters: SearchFilters, limit = 200) {
+  const params: unknown[] = [limit];
+  const where = filterConditions(filters, params);
+  const { rows } = await db.query<Transaction>(
+    `select ${SELECT_TRANSACTION} from transactions t
+     ${where.length ? `where ${where.join(" and ")}` : ""}
+     order by t.date desc, t.id limit $1`,
+    params,
+  );
+  return rows;
+}
+
 export type SearchResult = Transaction & {
   score: number;
   matchedBy: ("meaning" | "words")[];
@@ -117,16 +146,7 @@ export async function searchTransactions(
   limit = 50,
 ): Promise<SearchResult[]> {
   const params: unknown[] = [JSON.stringify(query.embedding), query.text, MIN_SIMILARITY, limit];
-  const where: string[] = [];
-  const add = (sql: string, value: unknown) => {
-    params.push(value);
-    where.push(sql.replace("?", `$${params.length}`));
-  };
-  if (filters.dateFrom) add("date >= ?", filters.dateFrom);
-  if (filters.dateTo) add("date <= ?", filters.dateTo);
-  if (filters.account) add("account = ?", filters.account);
-  if (filters.minAmount !== undefined) add("amount >= ?", filters.minAmount);
-  if (filters.maxAmount !== undefined) add("amount <= ?", filters.maxAmount);
+  const where = filterConditions(filters, params);
 
   const { rows } = await db.query<SearchResult & { meaning_rank: number | null; words_rank: number | null }>(
     `
@@ -166,4 +186,47 @@ export async function searchTransactions(
     score: Number(t.score),
     matchedBy: [...(meaning_rank ? ["meaning" as const] : []), ...(words_rank ? ["words" as const] : [])],
   }));
+}
+
+export type RecurringCharge = {
+  description: string;
+  account: string;
+  category: string | null;
+  months: number; // how many different months it appeared in
+  averageAmount: number;
+  first: string;
+  last: string;
+  latest: Transaction[]; // most recent first, up to 3
+};
+
+// Charges that repeat about once a month at a steady amount: subscriptions,
+// memberships, rent, bills. Search by meaning can't find these ("EQUINOX
+// BROOKLYN HTS" doesn't sound like "subscription"); the pattern can.
+export async function findRecurringCharges(db: PGlite): Promise<RecurringCharge[]> {
+  const { rows } = await db.query<Omit<RecurringCharge, "latest">>(`
+    select description, account, category,
+      count(distinct date_trunc('month', date))::int as months,
+      avg(amount)::float8 as "averageAmount",
+      to_char(min(date), 'YYYY-MM-DD') as first,
+      to_char(max(date), 'YYYY-MM-DD') as last
+    from transactions
+    where amount < 0
+    group by description, account, category
+    having count(distinct date_trunc('month', date)) >= 3
+      -- about once a month, not an everyday habit like coffee
+      and count(*) <= count(distinct date_trunc('month', date)) * 1.5
+      -- a steady amount (within 10%), unlike a utility bill
+      and max(amount) - min(amount) <= abs(avg(amount)) * 0.1
+    order by avg(amount)`);
+
+  return Promise.all(
+    rows.map(async (r) => {
+      const { rows: latest } = await db.query<Transaction>(
+        `select ${SELECT_TRANSACTION} from transactions t
+         where t.description = $1 and t.account = $2 order by t.date desc limit 3`,
+        [r.description, r.account],
+      );
+      return { ...r, latest };
+    }),
+  );
 }

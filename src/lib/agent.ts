@@ -6,7 +6,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { PGlite } from "@electric-sql/pglite";
 import { z } from "zod";
-import { searchTransactions } from "@/lib/search";
+import { findRecurringCharges, listTransactions, searchTransactions } from "@/lib/search";
 import type { Transaction } from "@/lib/transactions";
 
 export const DEMO_MODEL = "claude-haiku-5-5";
@@ -30,7 +30,7 @@ export type AgentEvent =
   | { type: "saved" }; // this answer was saved earlier, so it cost nothing
 
 const SearchInput = z.object({
-  query: z.string().min(1).max(200),
+  query: z.string().max(200).optional(),
   date_from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   date_to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   account: z.string().optional(),
@@ -44,20 +44,31 @@ const TOOLS: Anthropic.Tool[] = [
     description:
       "Search the user's transactions by meaning and by keywords. A query like \"coffee\" also finds cafes " +
       "that never use the word. Optional filters narrow by date, account and amount. Amounts are negative " +
-      "for money out and positive for money in. Returns the best matches, each with a reference like T3.",
+      "for money out and positive for money in. Leave out the query to list everything that matches the " +
+      "filters, e.g. all transactions in a date range. Returns matches, each with a reference like T3.",
     eager_input_streaming: true,
     input_schema: {
       type: "object",
       properties: {
-        query: { type: "string", description: "What to look for, in a few words, e.g. \"coffee\" or \"bank fees\"." },
+        query: {
+          type: "string",
+          description: "What to look for, in a few words, e.g. \"coffee\" or \"bank fees\". Leave out to list by filters only.",
+        },
         date_from: { type: "string", description: "Earliest date, YYYY-MM-DD." },
         date_to: { type: "string", description: "Latest date, YYYY-MM-DD." },
         account: { type: "string", description: "Exact account name." },
         min_amount: { type: "number", description: "Smallest amount, e.g. -100 to skip anything over $100 spent." },
         max_amount: { type: "number", description: "Largest amount, e.g. 0 for money out only." },
       },
-      required: ["query"],
     },
+  },
+  {
+    name: "find_recurring_charges",
+    description:
+      "List charges that repeat about once a month at a steady amount: subscriptions, memberships, rent, bills " +
+      "and transfers. Use it for questions about subscriptions or regular payments, because searching by name " +
+      "often misses them. Returns each charge with how many months it appeared and its latest references.",
+    input_schema: { type: "object", properties: {} },
   },
 ];
 
@@ -74,9 +85,10 @@ const PROMPT = `You are Money Chat. You answer questions about the user's bank s
 The statements in this demo are made-up sample data. Accounts: {accounts}. They cover {first} to {last}. Treat "this year" or "recently" as relative to {last}.
 
 How to answer:
-- Look things up with search_transactions before answering. Use the date, account and amount filters when the question mentions them.
+- Look things up with search_transactions before answering. Use the date, account and amount filters when the question mentions them. To see everything around a date (for example, what led to a fee), leave out the query and use only the date filters.
 - Bank descriptions are short and messy (e.g. "NETFLIX.COM", "TIME OUT MARKET LISBOA"), so one search is rarely enough. Try a few wordings: likely store names, categories, local spellings, and related words. For example, for subscriptions try streaming services, apps, gyms and memberships. Once you find something, search around its dates for related charges.
-- Answer only from what the searches return. If nothing relevant comes back, say so.
+- For subscriptions, memberships or regular bills, use find_recurring_charges.
+- Answer only from what the tools return. If nothing relevant comes back, say so. Never say something doesn't exist just because you didn't find it: say you didn't find it.
 - Your earlier answers in this conversation came from searches you can no longer see. Trust them. If you need their details again, search again rather than taking anything back.
 - Cite every transaction you mention with its reference in square brackets, one per bracket, like [T3] or [T3][T4].
 - You can't add up totals or averages yet. If asked for one, list the matching transactions instead and say exact totals are coming soon.
@@ -123,20 +135,42 @@ export async function runAgent({
   const refs = new Map<string, string>(); // transaction id -> "T3"
   const sources: Record<string, Transaction> = {};
 
+  // Gives a transaction a short reference like T3 and remembers what it points to.
+  function cite(t: Transaction) {
+    if (!refs.has(t.id)) refs.set(t.id, `T${refs.size + 1}`);
+    const ref = refs.get(t.id)!;
+    sources[ref] = { id: t.id, account: t.account, date: t.date, description: t.description, amount: t.amount, category: t.category };
+    return ref;
+  }
+
+  async function recurring() {
+    const charges = await findRecurringCharges(db);
+    if (charges.length === 0) return "No recurring charges found.";
+    const blocks = charges.map((c) => {
+      const header = `${c.description} (${c.account}${c.category ? `, ${c.category}` : ""}): ${c.averageAmount.toFixed(2)} a month, in ${c.months} months, ${c.first} to ${c.last}`;
+      return [header, ...c.latest.map((t) => `  ${cite(t)} | ${t.date} | ${t.amount.toFixed(2)}`)].join("\n");
+    });
+    return `${charges.length} recurring charges:\n\n${blocks.join("\n\n")}`;
+  }
+
   async function search(input: z.infer<typeof SearchInput>) {
+    const filters = {
+      dateFrom: input.date_from,
+      dateTo: input.date_to,
+      account: input.account,
+      minAmount: input.min_amount,
+      maxAmount: input.max_amount,
+    };
+    if (!input.query?.trim()) {
+      // No topic: list everything that matches the filters, by date.
+      const rows = await listTransactions(db, filters, 60);
+      if (rows.length === 0) return "No transactions match those filters.";
+      return `${rows.length} transactions${rows.length === 60 ? " (the latest 60)" : ""}, newest first:\n` +
+        rows.map((t) => `${cite(t)} | ${t.date} | ${t.description} | ${t.amount.toFixed(2)} | ${t.account}`).join("\n");
+    }
+
     const [embedding] = await embed([input.query]);
-    const results = await searchTransactions(
-      db,
-      { text: input.query, embedding },
-      {
-        dateFrom: input.date_from,
-        dateTo: input.date_to,
-        account: input.account,
-        minAmount: input.min_amount,
-        maxAmount: input.max_amount,
-      },
-      200,
-    );
+    const results = await searchTransactions(db, { text: input.query, embedding }, filters, 200);
     if (results.length === 0) return "No matching transactions.";
 
     // Group by description, keeping the search's ranking order between groups.
@@ -150,12 +184,7 @@ export async function runAgent({
       const latest = rows.length <= SHOW_ALL_UP_TO ? newestFirst : newestFirst.slice(0, LATEST_ROWS);
       const count = latest.length === rows.length ? `${rows.length} match${rows.length === 1 ? "" : "es"}` : `${rows.length} matches (latest ${latest.length} shown)`;
       const header = `${first.description} (${first.account}${first.category ? `, ${first.category}` : ""}): ${count}, ${dates[0]} to ${dates.at(-1)}, matched by ${first.matchedBy.join(" + ")}`;
-      const lines = latest.map((t) => {
-        if (!refs.has(t.id)) refs.set(t.id, `T${refs.size + 1}`);
-        const ref = refs.get(t.id)!;
-        sources[ref] = { id: t.id, account: t.account, date: t.date, description: t.description, amount: t.amount, category: t.category };
-        return `  ${ref} | ${t.date} | ${t.amount.toFixed(2)}`;
-      });
+      const lines = latest.map((t) => `  ${cite(t)} | ${t.date} | ${t.amount.toFixed(2)}`);
       return [header, ...lines].join("\n");
     });
     const more = groups.size > MAX_GROUPS ? ` (showing the best ${MAX_GROUPS})` : "";
@@ -191,12 +220,17 @@ export async function runAgent({
     messages.push({ role: "assistant", content: message.content });
     const results: Anthropic.ToolResultBlockParam[] = [];
     for (const call of toolCalls) {
+      if (call.name === "find_recurring_charges") {
+        onEvent({ type: "search", query: "recurring charges" });
+        results.push({ type: "tool_result", tool_use_id: call.id, content: await recurring() });
+        continue;
+      }
       const input = SearchInput.safeParse(readInput(call));
       if (call.name !== "search_transactions" || !input.success) {
         results.push({ type: "tool_result", tool_use_id: call.id, is_error: true, content: "Invalid tool call." });
         continue;
       }
-      onEvent({ type: "search", query: input.data.query });
+      onEvent({ type: "search", query: input.data.query?.trim() || describeFilters(input.data) });
       results.push({ type: "tool_result", tool_use_id: call.id, content: await search(input.data) });
     }
     // All results go back in one message, so Claude can keep searching in parallel.
@@ -213,4 +247,13 @@ function readInput(call: Anthropic.ToolUseBlock): unknown {
   } catch {
     return null;
   }
+}
+
+// For the "Searched for ..." line when Claude lists by filters only.
+function describeFilters(input: z.infer<typeof SearchInput>) {
+  const parts = [
+    input.date_from && input.date_to ? `${input.date_from} to ${input.date_to}` : input.date_from ? `from ${input.date_from}` : input.date_to ? `until ${input.date_to}` : "",
+    input.account ?? "",
+  ].filter(Boolean);
+  return parts.length ? `everything ${parts.join(", ")}` : "everything";
 }
