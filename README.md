@@ -2,6 +2,8 @@
 
 Upload your bank statements and ask questions about your money in plain English.
 
+**Live site:** https://money-chat-sigma.vercel.app
+
 > "How much did I spend on coffee this year?"
 > "Why was I charged a $35 fee?"
 > "What subscriptions am I paying for?"
