@@ -11,6 +11,7 @@ export type ChatMessage = {
   sources?: Record<string, Transaction>; // what [T3] etc. point to
   error?: string;
   pending?: boolean;
+  saved?: boolean; // answered from a saved copy, at no cost
 };
 
 const MAX_HISTORY = 9; // the server accepts up to 10 messages, including the new question
@@ -76,6 +77,8 @@ export function useChat() {
               return { ...a, sources: event.sources };
             case "error":
               return { ...a, error: event.message };
+            case "saved":
+              return { ...a, saved: true };
           }
         });
       }

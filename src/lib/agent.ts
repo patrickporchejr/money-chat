@@ -26,7 +26,8 @@ export type AgentEvent =
   | { type: "text"; text: string }
   | { type: "search"; query: string }
   | { type: "sources"; sources: Record<string, Transaction> }
-  | { type: "error"; message: string };
+  | { type: "error"; message: string }
+  | { type: "saved" }; // this answer was saved earlier, so it cost nothing
 
 const SearchInput = z.object({
   query: z.string().min(1).max(200),
@@ -68,10 +69,9 @@ export async function describeData(db: PGlite) {
   return rows[0];
 }
 
-function systemPrompt(data: { accounts: string[]; first: string; last: string }) {
-  return `You are Money Chat. You answer questions about the user's bank statements.
+const PROMPT = `You are Money Chat. You answer questions about the user's bank statements.
 
-The statements in this demo are made-up sample data. Accounts: ${data.accounts.join(", ")}. They cover ${data.first} to ${data.last}. Treat "this year" or "recently" as relative to ${data.last}.
+The statements in this demo are made-up sample data. Accounts: {accounts}. They cover {first} to {last}. Treat "this year" or "recently" as relative to {last}.
 
 How to answer:
 - Look things up with search_transactions before answering. Use the date, account and amount filters when the question mentions them.
@@ -82,7 +82,16 @@ How to answer:
 - You can't add up totals or averages yet. If asked for one, list the matching transactions instead and say exact totals are coming soon.
 - Keep it short: one or two sentences, then at most 8 transactions as a list. Plain text only: no headings or bold. Start list items with "- ".
 - Only help with questions about these statements. For anything else, say that's all you can help with.`;
+
+function systemPrompt(data: { accounts: string[]; first: string; last: string }) {
+  return PROMPT.replace("{accounts}", data.accounts.join(", "))
+    .replace("{first}", data.first)
+    .replaceAll("{last}", data.last);
 }
+
+// Everything that shapes an answer. Saved answers record a fingerprint of this
+// (plus the sample data), so changing any of it retires them automatically.
+export const AGENT_SETTINGS = { DEMO_MODEL, PROMPT, TOOLS, MAX_TOOL_ROUNDS, MAX_GROUPS, SHOW_ALL_UP_TO, LATEST_ROWS };
 
 // Runs one answer: Claude searches as many times as it needs, then writes the
 // answer. Streams text as it's written, and tells the caller which

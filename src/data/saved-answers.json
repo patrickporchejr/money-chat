@@ -1,0 +1,1117 @@
+{
+  "version": "dbfbb19b19ef",
+  "answers": {
+    "what subscriptions am i paying for": [
+      {
+        "type": "search",
+        "query": "subscription monthly recurring streaming membership"
+      },
+      {
+        "type": "search",
+        "query": "Netflix Spotify Hulu Disney Apple Google subscription"
+      },
+      {
+        "type": "search",
+        "query": "gym fitness app membership renewal"
+      },
+      {
+        "type": "sources",
+        "sources": {
+          "T1": {
+            "id": "Harbor Bank Checking-80",
+            "account": "Harbor Bank Checking",
+            "date": "2026-09-01",
+            "description": "MONTHLY MAINTENANCE FEE",
+            "amount": -12,
+            "category": null
+          },
+          "T2": {
+            "id": "Harbor Bank Checking-73",
+            "account": "Harbor Bank Checking",
+            "date": "2026-08-01",
+            "description": "MONTHLY MAINTENANCE FEE",
+            "amount": -12,
+            "category": null
+          },
+          "T3": {
+            "id": "Harbor Bank Checking-66",
+            "account": "Harbor Bank Checking",
+            "date": "2026-07-01",
+            "description": "MONTHLY MAINTENANCE FEE",
+            "amount": -12,
+            "category": null
+          },
+          "T4": {
+            "id": "Harbor Bank Checking-7",
+            "account": "Harbor Bank Checking",
+            "date": "2025-11-01",
+            "description": "MONTHLY MAINTENANCE FEE",
+            "amount": -12,
+            "category": null
+          },
+          "T5": {
+            "id": "Summit Card-539",
+            "account": "Summit Card",
+            "date": "2026-09-07",
+            "description": "SPOTIFY USA",
+            "amount": -11.99,
+            "category": "Entertainment"
+          },
+          "T6": {
+            "id": "Summit Card-495",
+            "account": "Summit Card",
+            "date": "2026-08-07",
+            "description": "SPOTIFY USA",
+            "amount": -11.99,
+            "category": "Entertainment"
+          },
+          "T7": {
+            "id": "Summit Card-442",
+            "account": "Summit Card",
+            "date": "2026-07-07",
+            "description": "SPOTIFY USA",
+            "amount": -11.99,
+            "category": "Entertainment"
+          },
+          "T8": {
+            "id": "Summit Card-533",
+            "account": "Summit Card",
+            "date": "2026-09-03",
+            "description": "NETFLIX.COM",
+            "amount": -17.99,
+            "category": "Entertainment"
+          },
+          "T9": {
+            "id": "Summit Card-489",
+            "account": "Summit Card",
+            "date": "2026-08-03",
+            "description": "NETFLIX.COM",
+            "amount": -17.99,
+            "category": "Entertainment"
+          },
+          "T10": {
+            "id": "Summit Card-428",
+            "account": "Summit Card",
+            "date": "2026-07-03",
+            "description": "NETFLIX.COM",
+            "amount": -17.99,
+            "category": "Entertainment"
+          }
+        }
+      },
+      {
+        "type": "text",
+        "text": "Your"
+      },
+      {
+        "type": "text",
+        "text": " stat"
+      },
+      {
+        "type": "text",
+        "text": "ements show two rec"
+      },
+      {
+        "type": "text",
+        "text": "urring subscriptions:"
+      },
+      {
+        "type": "text",
+        "text": " Net"
+      },
+      {
+        "type": "text",
+        "text": "flix at"
+      },
+      {
+        "type": "text",
+        "text": " $17.99 a month ["
+      },
+      {
+        "type": "text",
+        "text": "T8]["
+      },
+      {
+        "type": "text",
+        "text": "T9][T10] and"
+      },
+      {
+        "type": "text",
+        "text": " Spotify at $11.99"
+      },
+      {
+        "type": "text",
+        "text": " a month [T5][T"
+      },
+      {
+        "type": "text",
+        "text": "6][T7]. Both"
+      },
+      {
+        "type": "text",
+        "text": " char"
+      },
+      {
+        "type": "text",
+        "text": "ges app"
+      },
+      {
+        "type": "text",
+        "text": "ear every month through September 2026"
+      },
+      {
+        "type": "text",
+        "text": ". I"
+      },
+      {
+        "type": "text",
+        "text": " found"
+      },
+      {
+        "type": "text",
+        "text": " no g"
+      },
+      {
+        "type": "text",
+        "text": "ym or"
+      },
+      {
+        "type": "text",
+        "text": " fitness memberships."
+      },
+      {
+        "type": "text",
+        "text": " The Harbor Bank"
+      },
+      {
+        "type": "text",
+        "text": " mon"
+      },
+      {
+        "type": "text",
+        "text": "thly maintenance fee"
+      },
+      {
+        "type": "text",
+        "text": " of $12.00 ["
+      },
+      {
+        "type": "text",
+        "text": "T1][T2]"
+      },
+      {
+        "type": "text",
+        "text": " is a bank fee, not"
+      },
+      {
+        "type": "text",
+        "text": " a subscription."
+      }
+    ],
+    "where do i buy coffee": [
+      {
+        "type": "search",
+        "query": "coffee"
+      },
+      {
+        "type": "search",
+        "query": "cafe"
+      },
+      {
+        "type": "search",
+        "query": "Starbucks"
+      },
+      {
+        "type": "sources",
+        "sources": {
+          "T1": {
+            "id": "Summit Card-569",
+            "account": "Summit Card",
+            "date": "2026-09-27",
+            "description": "BLUE BOTTLE COFFEE #12",
+            "amount": -8.77,
+            "category": "Food & Drink"
+          },
+          "T2": {
+            "id": "Summit Card-563",
+            "account": "Summit Card",
+            "date": "2026-09-22",
+            "description": "BLUE BOTTLE COFFEE #12",
+            "amount": -4.95,
+            "category": "Food & Drink"
+          },
+          "T3": {
+            "id": "Summit Card-552",
+            "account": "Summit Card",
+            "date": "2026-09-14",
+            "description": "BLUE BOTTLE COFFEE #12",
+            "amount": -7.65,
+            "category": "Food & Drink"
+          },
+          "T4": {
+            "id": "Summit Card-508",
+            "account": "Summit Card",
+            "date": "2026-08-16",
+            "description": "STARBUCKS #0912 NEW YORK",
+            "amount": -10.57,
+            "category": "Food & Drink"
+          },
+          "T5": {
+            "id": "Summit Card-403",
+            "account": "Summit Card",
+            "date": "2026-06-15",
+            "description": "STARBUCKS #0912 NEW YORK",
+            "amount": -6.67,
+            "category": "Food & Drink"
+          },
+          "T6": {
+            "id": "Summit Card-334",
+            "account": "Summit Card",
+            "date": "2026-05-03",
+            "description": "STARBUCKS #0912 NEW YORK",
+            "amount": -8.3,
+            "category": "Food & Drink"
+          },
+          "T7": {
+            "id": "Summit Card-570",
+            "account": "Summit Card",
+            "date": "2026-09-27",
+            "description": "JOE'S CAFE 0098",
+            "amount": -4.21,
+            "category": "Food & Drink"
+          },
+          "T8": {
+            "id": "Summit Card-521",
+            "account": "Summit Card",
+            "date": "2026-08-24",
+            "description": "JOE'S CAFE 0098",
+            "amount": -5.42,
+            "category": "Food & Drink"
+          },
+          "T9": {
+            "id": "Summit Card-519",
+            "account": "Summit Card",
+            "date": "2026-08-23",
+            "description": "JOE'S CAFE 0098",
+            "amount": -6.4,
+            "category": "Food & Drink"
+          },
+          "T10": {
+            "id": "Summit Card-556",
+            "account": "Summit Card",
+            "date": "2026-09-16",
+            "description": "TST* JOES CAFE BROOKLYN",
+            "amount": -6.98,
+            "category": "Food & Drink"
+          },
+          "T11": {
+            "id": "Summit Card-555",
+            "account": "Summit Card",
+            "date": "2026-09-16",
+            "description": "TST* JOES CAFE BROOKLYN",
+            "amount": -3.63,
+            "category": "Food & Drink"
+          },
+          "T12": {
+            "id": "Summit Card-553",
+            "account": "Summit Card",
+            "date": "2026-09-14",
+            "description": "TST* JOES CAFE BROOKLYN",
+            "amount": -4,
+            "category": "Food & Drink"
+          },
+          "T13": {
+            "id": "Summit Card-573",
+            "account": "Summit Card",
+            "date": "2026-09-28",
+            "description": "STARBUCKS STORE 08812",
+            "amount": -7.82,
+            "category": "Food & Drink"
+          },
+          "T14": {
+            "id": "Summit Card-541",
+            "account": "Summit Card",
+            "date": "2026-09-08",
+            "description": "STARBUCKS STORE 08812",
+            "amount": -5.64,
+            "category": "Food & Drink"
+          },
+          "T15": {
+            "id": "Summit Card-531",
+            "account": "Summit Card",
+            "date": "2026-09-03",
+            "description": "STARBUCKS STORE 08812",
+            "amount": -10.56,
+            "category": "Food & Drink"
+          },
+          "T16": {
+            "id": "Summit Card-547",
+            "account": "Summit Card",
+            "date": "2026-09-10",
+            "description": "DOORDASH*THAI VILLA",
+            "amount": -38.18,
+            "category": "Food & Drink"
+          },
+          "T17": {
+            "id": "Summit Card-502",
+            "account": "Summit Card",
+            "date": "2026-08-12",
+            "description": "DOORDASH*THAI VILLA",
+            "amount": -35.27,
+            "category": "Food & Drink"
+          },
+          "T18": {
+            "id": "Summit Card-485",
+            "account": "Summit Card",
+            "date": "2026-08-02",
+            "description": "DOORDASH*THAI VILLA",
+            "amount": -24.45,
+            "category": "Food & Drink"
+          },
+          "T19": {
+            "id": "Summit Card-571",
+            "account": "Summit Card",
+            "date": "2026-09-27",
+            "description": "TRADER JOE S #548 BROOKLYN",
+            "amount": -98.23,
+            "category": "Groceries"
+          },
+          "T20": {
+            "id": "Summit Card-557",
+            "account": "Summit Card",
+            "date": "2026-09-16",
+            "description": "TRADER JOE S #548 BROOKLYN",
+            "amount": -39.2,
+            "category": "Groceries"
+          },
+          "T21": {
+            "id": "Summit Card-543",
+            "account": "Summit Card",
+            "date": "2026-09-09",
+            "description": "TRADER JOE S #548 BROOKLYN",
+            "amount": -113.37,
+            "category": "Groceries"
+          },
+          "T22": {
+            "id": "Summit Card-450",
+            "account": "Summit Card",
+            "date": "2026-07-11",
+            "description": "TIME OUT MARKET LISBOA",
+            "amount": -48.2,
+            "category": "Food & Drink"
+          },
+          "T23": {
+            "id": "Summit Card-447",
+            "account": "Summit Card",
+            "date": "2026-07-10",
+            "description": "PASTEIS DE BELEM LISBOA",
+            "amount": -14.5,
+            "category": "Food & Drink"
+          },
+          "T24": {
+            "id": "Summit Card-548",
+            "account": "Summit Card",
+            "date": "2026-09-12",
+            "description": "TRADER JOES #548",
+            "amount": -91.2,
+            "category": "Groceries"
+          },
+          "T25": {
+            "id": "Summit Card-513",
+            "account": "Summit Card",
+            "date": "2026-08-18",
+            "description": "TRADER JOES #548",
+            "amount": -59.35,
+            "category": "Groceries"
+          },
+          "T26": {
+            "id": "Summit Card-466",
+            "account": "Summit Card",
+            "date": "2026-07-15",
+            "description": "TRADER JOES #548",
+            "amount": -44.93,
+            "category": "Groceries"
+          },
+          "T27": {
+            "id": "Summit Card-444",
+            "account": "Summit Card",
+            "date": "2026-07-09",
+            "description": "HOTEL ALFAMA LISBOA",
+            "amount": -1120,
+            "category": "Travel"
+          },
+          "T28": {
+            "id": "Summit Card-509",
+            "account": "Summit Card",
+            "date": "2026-08-17",
+            "description": "SQ *BLUEBOTTLE OAKLAND",
+            "amount": -5.57,
+            "category": "Food & Drink"
+          },
+          "T29": {
+            "id": "Summit Card-500",
+            "account": "Summit Card",
+            "date": "2026-08-12",
+            "description": "SQ *BLUEBOTTLE OAKLAND",
+            "amount": -8.38,
+            "category": "Food & Drink"
+          },
+          "T30": {
+            "id": "Summit Card-490",
+            "account": "Summit Card",
+            "date": "2026-08-04",
+            "description": "SQ *BLUEBOTTLE OAKLAND",
+            "amount": -7.57,
+            "category": "Food & Drink"
+          },
+          "T31": {
+            "id": "Summit Card-546",
+            "account": "Summit Card",
+            "date": "2026-09-09",
+            "description": "DOORDASH*SWEETGREEN",
+            "amount": -33.94,
+            "category": "Food & Drink"
+          },
+          "T32": {
+            "id": "Summit Card-536",
+            "account": "Summit Card",
+            "date": "2026-09-04",
+            "description": "DOORDASH*SWEETGREEN",
+            "amount": -30.36,
+            "category": "Food & Drink"
+          },
+          "T33": {
+            "id": "Summit Card-528",
+            "account": "Summit Card",
+            "date": "2026-08-28",
+            "description": "DOORDASH*SWEETGREEN",
+            "amount": -33.78,
+            "category": "Food & Drink"
+          }
+        }
+      },
+      {
+        "type": "text",
+        "text": "You buy coffee most"
+      },
+      {
+        "type": "text",
+        "text": " often at Blue Bott"
+      },
+      {
+        "type": "text",
+        "text": "le Coffee #"
+      },
+      {
+        "type": "text",
+        "text": "12 (36"
+      },
+      {
+        "type": "text",
+        "text": " matches on"
+      },
+      {
+        "type": "text",
+        "text": " Summit Card) and"
+      },
+      {
+        "type": "text",
+        "text": " Starbucks ("
+      },
+      {
+        "type": "text",
+        "text": "Store "
+      },
+      {
+        "type": "text",
+        "text": "08812 and the"
+      },
+      {
+        "type": "text",
+        "text": " New"
+      },
+      {
+        "type": "text",
+        "text": " York location"
+      },
+      {
+        "type": "text",
+        "text": ","
+      },
+      {
+        "type": "text",
+        "text": " both on Summit Card)."
+      },
+      {
+        "type": "text",
+        "text": " Joe's Cafe,"
+      },
+      {
+        "type": "text",
+        "text": " with loc"
+      },
+      {
+        "type": "text",
+        "text": "ations at"
+      },
+      {
+        "type": "text",
+        "text": " 0098 and Broo"
+      },
+      {
+        "type": "text",
+        "text": "klyn, also sh"
+      },
+      {
+        "type": "text",
+        "text": "ows up reg"
+      },
+      {
+        "type": "text",
+        "text": "ularly. Recent exam"
+      },
+      {
+        "type": "text",
+        "text": "ples: Blue Bott"
+      },
+      {
+        "type": "text",
+        "text": "le ["
+      },
+      {
+        "type": "text",
+        "text": "T1]["
+      },
+      {
+        "type": "text",
+        "text": "T2],"
+      },
+      {
+        "type": "text",
+        "text": " Starbucks [T13"
+      },
+      {
+        "type": "text",
+        "text": "]["
+      },
+      {
+        "type": "text",
+        "text": "T14], and Joe's"
+      },
+      {
+        "type": "text",
+        "text": " Cafe [T7"
+      },
+      {
+        "type": "text",
+        "text": "][T10"
+      },
+      {
+        "type": "text",
+        "text": "]."
+      },
+      {
+        "type": "text",
+        "text": "\n\n-"
+      },
+      {
+        "type": "text",
+        "text": " B"
+      },
+      {
+        "type": "text",
+        "text": "LUE BOTTL"
+      },
+      {
+        "type": "text",
+        "text": "E COFFEE #12"
+      },
+      {
+        "type": "text",
+        "text": " 2026-09-27 "
+      },
+      {
+        "type": "text",
+        "text": "-8.77 "
+      },
+      {
+        "type": "text",
+        "text": "[T1]\n- B"
+      },
+      {
+        "type": "text",
+        "text": "LUE BOTTL"
+      },
+      {
+        "type": "text",
+        "text": "E COFFEE #12"
+      },
+      {
+        "type": "text",
+        "text": " 2026-09-22 "
+      },
+      {
+        "type": "text",
+        "text": "-4.95 [T2"
+      },
+      {
+        "type": "text",
+        "text": "]\n- STARBUC"
+      },
+      {
+        "type": "text",
+        "text": "KS STORE 08812"
+      },
+      {
+        "type": "text",
+        "text": " 2026-09-28 "
+      },
+      {
+        "type": "text",
+        "text": "-7.82 [T13"
+      },
+      {
+        "type": "text",
+        "text": "]\n- STARBUC"
+      },
+      {
+        "type": "text",
+        "text": "KS STORE 08812"
+      },
+      {
+        "type": "text",
+        "text": " 2026-09-08 "
+      },
+      {
+        "type": "text",
+        "text": "-5.64 [T14"
+      },
+      {
+        "type": "text",
+        "text": "]\n- JOE'S"
+      },
+      {
+        "type": "text",
+        "text": " CAFE 0098 "
+      },
+      {
+        "type": "text",
+        "text": "2026-09-27 -"
+      },
+      {
+        "type": "text",
+        "text": "4.21 [T7]"
+      },
+      {
+        "type": "text",
+        "text": "\n- TST* JOES"
+      },
+      {
+        "type": "text",
+        "text": " CAFE BROOK"
+      },
+      {
+        "type": "text",
+        "text": "LYN 2026-09"
+      },
+      {
+        "type": "text",
+        "text": "-16 -6"
+      },
+      {
+        "type": "text",
+        "text": ".98 [T10]"
+      }
+    ],
+    "why was i charged a $35 fee": [
+      {
+        "type": "search",
+        "query": "fee"
+      },
+      {
+        "type": "search",
+        "query": "$35 fee charge"
+      },
+      {
+        "type": "sources",
+        "sources": {
+          "T1": {
+            "id": "Harbor Bank Checking-60",
+            "account": "Harbor Bank Checking",
+            "date": "2026-06-11",
+            "description": "OVERDRAFT FEE",
+            "amount": -35,
+            "category": null
+          },
+          "T2": {
+            "id": "Summit Card-235",
+            "account": "Summit Card",
+            "date": "2026-02-28",
+            "description": "INTEREST CHARGE ON PURCHASES",
+            "amount": -18.74,
+            "category": "Fees"
+          },
+          "T3": {
+            "id": "Summit Card-212",
+            "account": "Summit Card",
+            "date": "2026-02-16",
+            "description": "LATE PAYMENT FEE",
+            "amount": -29,
+            "category": "Fees"
+          },
+          "T4": {
+            "id": "Summit Card-459",
+            "account": "Summit Card",
+            "date": "2026-07-13",
+            "description": "FOREIGN TRANSACTION FEE",
+            "amount": -2.2,
+            "category": "Fees"
+          },
+          "T5": {
+            "id": "Summit Card-454",
+            "account": "Summit Card",
+            "date": "2026-07-12",
+            "description": "FOREIGN TRANSACTION FEE",
+            "amount": -0.49,
+            "category": "Fees"
+          },
+          "T6": {
+            "id": "Summit Card-451",
+            "account": "Summit Card",
+            "date": "2026-07-11",
+            "description": "FOREIGN TRANSACTION FEE",
+            "amount": -1.45,
+            "category": "Fees"
+          },
+          "T7": {
+            "id": "Summit Card-448",
+            "account": "Summit Card",
+            "date": "2026-07-10",
+            "description": "FOREIGN TRANSACTION FEE",
+            "amount": -0.44,
+            "category": "Fees"
+          },
+          "T8": {
+            "id": "Summit Card-445",
+            "account": "Summit Card",
+            "date": "2026-07-09",
+            "description": "FOREIGN TRANSACTION FEE",
+            "amount": -33.6,
+            "category": "Fees"
+          },
+          "T9": {
+            "id": "Harbor Bank Checking-80",
+            "account": "Harbor Bank Checking",
+            "date": "2026-09-01",
+            "description": "MONTHLY MAINTENANCE FEE",
+            "amount": -12,
+            "category": null
+          },
+          "T10": {
+            "id": "Harbor Bank Checking-73",
+            "account": "Harbor Bank Checking",
+            "date": "2026-08-01",
+            "description": "MONTHLY MAINTENANCE FEE",
+            "amount": -12,
+            "category": null
+          },
+          "T11": {
+            "id": "Harbor Bank Checking-66",
+            "account": "Harbor Bank Checking",
+            "date": "2026-07-01",
+            "description": "MONTHLY MAINTENANCE FEE",
+            "amount": -12,
+            "category": null
+          },
+          "T12": {
+            "id": "Harbor Bank Checking-7",
+            "account": "Harbor Bank Checking",
+            "date": "2025-11-01",
+            "description": "MONTHLY MAINTENANCE FEE",
+            "amount": -12,
+            "category": null
+          }
+        }
+      },
+      {
+        "type": "text",
+        "text": "The $35 char"
+      },
+      {
+        "type": "text",
+        "text": "ge is an overdraft f"
+      },
+      {
+        "type": "text",
+        "text": "ee on Harbor B"
+      },
+      {
+        "type": "text",
+        "text": "ank Checking,"
+      },
+      {
+        "type": "text",
+        "text": " pos"
+      },
+      {
+        "type": "text",
+        "text": "ted 2026-06-11"
+      },
+      {
+        "type": "text",
+        "text": " [T1]. The stat"
+      },
+      {
+        "type": "text",
+        "text": "ement sh"
+      },
+      {
+        "type": "text",
+        "text": "ows the"
+      },
+      {
+        "type": "text",
+        "text": " f"
+      },
+      {
+        "type": "text",
+        "text": "ee type"
+      },
+      {
+        "type": "text",
+        "text": " but not the trans"
+      },
+      {
+        "type": "text",
+        "text": "act"
+      },
+      {
+        "type": "text",
+        "text": "ions that ca"
+      },
+      {
+        "type": "text",
+        "text": "used the"
+      },
+      {
+        "type": "text",
+        "text": " account to go"
+      },
+      {
+        "type": "text",
+        "text": " negative, so I can't t"
+      },
+      {
+        "type": "text",
+        "text": "ell you ex"
+      },
+      {
+        "type": "text",
+        "text": "actly what triggered it."
+      }
+    ],
+    "what did i spend in lisbon": [
+      {
+        "type": "search",
+        "query": "Lisbon"
+      },
+      {
+        "type": "search",
+        "query": "Lisboa Portugal purchase"
+      },
+      {
+        "type": "sources",
+        "sources": {
+          "T1": {
+            "id": "Summit Card-443",
+            "account": "Summit Card",
+            "date": "2026-07-08",
+            "description": "TAP AIR PORTUGAL 0472",
+            "amount": -842,
+            "category": "Travel"
+          },
+          "T2": {
+            "id": "Summit Card-444",
+            "account": "Summit Card",
+            "date": "2026-07-09",
+            "description": "HOTEL ALFAMA LISBOA",
+            "amount": -1120,
+            "category": "Travel"
+          },
+          "T3": {
+            "id": "Summit Card-447",
+            "account": "Summit Card",
+            "date": "2026-07-10",
+            "description": "PASTEIS DE BELEM LISBOA",
+            "amount": -14.5,
+            "category": "Food & Drink"
+          },
+          "T4": {
+            "id": "Summit Card-453",
+            "account": "Summit Card",
+            "date": "2026-07-12",
+            "description": "UBER *TRIP LISBOA",
+            "amount": -16.3,
+            "category": "Transportation"
+          },
+          "T5": {
+            "id": "Summit Card-450",
+            "account": "Summit Card",
+            "date": "2026-07-11",
+            "description": "TIME OUT MARKET LISBOA",
+            "amount": -48.2,
+            "category": "Food & Drink"
+          },
+          "T6": {
+            "id": "Summit Card-458",
+            "account": "Summit Card",
+            "date": "2026-07-13",
+            "description": "A CEVICHERIA LISBOA",
+            "amount": -73.4,
+            "category": "Food & Drink"
+          },
+          "T7": {
+            "id": "Summit Card-235",
+            "account": "Summit Card",
+            "date": "2026-02-28",
+            "description": "INTEREST CHARGE ON PURCHASES",
+            "amount": -18.74,
+            "category": "Fees"
+          }
+        }
+      },
+      {
+        "type": "text",
+        "text": "I found six"
+      },
+      {
+        "type": "text",
+        "text": " Lisbon-related charges"
+      },
+      {
+        "type": "text",
+        "text": " on your"
+      },
+      {
+        "type": "text",
+        "text": " Summit Card, all in"
+      },
+      {
+        "type": "text",
+        "text": " July 2026. Exact"
+      },
+      {
+        "type": "text",
+        "text": " totals are coming soon,"
+      },
+      {
+        "type": "text",
+        "text": " so here"
+      },
+      {
+        "type": "text",
+        "text": " they"
+      },
+      {
+        "type": "text",
+        "text": " are individ"
+      },
+      {
+        "type": "text",
+        "text": "ually:\n\n-"
+      },
+      {
+        "type": "text",
+        "text": " Fl"
+      },
+      {
+        "type": "text",
+        "text": "ight"
+      },
+      {
+        "type": "text",
+        "text": ":"
+      },
+      {
+        "type": "text",
+        "text": " TAP Air Portug"
+      },
+      {
+        "type": "text",
+        "text": "al [T1]"
+      },
+      {
+        "type": "text",
+        "text": " for $"
+      },
+      {
+        "type": "text",
+        "text": "842.00\n- Hot"
+      },
+      {
+        "type": "text",
+        "text": "el: Hotel Al"
+      },
+      {
+        "type": "text",
+        "text": "fama Lisboa ["
+      },
+      {
+        "type": "text",
+        "text": "T2] for $1,120"
+      },
+      {
+        "type": "text",
+        "text": ".00\n- Pasté"
+      },
+      {
+        "type": "text",
+        "text": "is de Belém ["
+      },
+      {
+        "type": "text",
+        "text": "T3] for $14.50"
+      },
+      {
+        "type": "text",
+        "text": "\n- Time"
+      },
+      {
+        "type": "text",
+        "text": " Out Market Lisbo"
+      },
+      {
+        "type": "text",
+        "text": "a [T5"
+      },
+      {
+        "type": "text",
+        "text": "] for $48.20\n-"
+      },
+      {
+        "type": "text",
+        "text": " A Cevic"
+      },
+      {
+        "type": "text",
+        "text": "heria Lisboa ["
+      },
+      {
+        "type": "text",
+        "text": "T6] for $73.40"
+      },
+      {
+        "type": "text",
+        "text": "\n- Uber tr"
+      },
+      {
+        "type": "text",
+        "text": "ip in Lisbon ["
+      },
+      {
+        "type": "text",
+        "text": "T4] for $16.30"
+      }
+    ]
+  }
+}

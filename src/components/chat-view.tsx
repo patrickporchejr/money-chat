@@ -1,18 +1,11 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState } from "react";
-import { ArrowUp, Loader2, Paperclip, Search, Sparkles } from "lucide-react";
+import { ArrowUp, Loader2, Paperclip, Search, Sparkles, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { ChatMessage } from "@/hooks/use-chat";
+import { SUGGESTED_QUESTIONS } from "@/lib/suggested-questions";
 import type { Transaction } from "@/lib/transactions";
-
-// The clickable starter questions. Their answers will be saved ahead of time (see docs/PLAN.md).
-const SUGGESTED_QUESTIONS = [
-  "What subscriptions am I paying for?",
-  "Where do I buy coffee?",
-  "Why was I charged a $35 fee?",
-  "What did I spend in Lisbon?",
-];
 
 // Which data the chat can answer about right now.
 export type ChatMode = "no-data" | "sample" | "own-data";
@@ -143,8 +136,13 @@ function Answer({ message }: { message: ChatMessage }) {
   return (
     <div className="flex max-w-[90%] flex-col gap-2 text-sm">
       {message.searches?.length ? (
-        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <p className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
           <Search className="size-3" /> Searched for {message.searches.map((s) => `“${s}”`).join(", ")}
+          {message.saved && (
+            <span title="This question was answered before, so the saved answer is shown instantly." className="ml-1 inline-flex items-center gap-0.5">
+              · <Zap className="size-3" /> Saved answer
+            </span>
+          )}
         </p>
       ) : null}
 
