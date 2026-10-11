@@ -149,7 +149,13 @@ The server loads the sample CSVs into an in-memory PGlite and embeds them on fir
 
 It's built on Anthropic's eval runner (retries, per-question time limit, resume, and a fingerprint of the eval code that has to be approved before it runs). Results land in `.claude/hillclimb/demo-chat/`.
 
-**Baseline:** 52/52 (26 questions × 2 runs), $0.07 per full run, median answer 2.9 s. A perfect score means it's a safety net for now, not a measuring tool: new steps add questions that fail until the feature works.
+**How it's scored:** each answer gets partial credit from 0 to 1. **Recall** is the share of expected facts mentioned, **precision** is the share of cited transactions that fit the question, plus citations, filters and rules. For prompt changes, a judge also compares each new answer **head-to-head** with the frozen baseline answer.
+
+**Baseline (40 questions):** score **0.93 ± 0.05**. The original 26 score 0.97 and the 14 hard ones **0.87**; 78% of answers are perfect. The hard ones fail on sorting ("cheapest coffee", "largest charges"), hedging ("what about tea?") and "last month" (counted from the statements' end, not today), which gives the next steps something to move.
+
+**Judge check (A/A):** the unchanged app vs itself on 10 questions came out 55% (4 wins, 3 ties, 3 losses), so no bias. Head-to-head is noisy: with 40 questions, only differences above about 15 points are real.
+
+**Cost:** about $0.06 per full pass (one answer per question), plus about $0.10 for head-to-head. We run it only when the prompt or tools change, not on every PR.
 
 ## Build order
 

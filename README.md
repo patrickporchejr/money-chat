@@ -31,7 +31,7 @@ Totals and averages are always done with plain math, not the AI, so the numbers 
 
 ## Quality checks
 
-`npm run eval` asks the chat 26 questions with known answers and grades every reply: plain code checks the facts and citations, and a second Claude model checks the rules (no made-up charges, no totals it can't do yet, stays on topic). Current baseline: 52/52 across two runs, about $0.07 per run. Details in [docs/PLAN.md](docs/PLAN.md).
+`npm run eval` asks the chat 40 questions with known answers and grades every reply with partial credit: plain code checks the facts and citations, and a second Claude model checks the rules (no made-up charges, no totals it can't do yet, stays on topic). For prompt changes, a judge compares new answers head-to-head with the old ones. Current baseline: **0.93** (0.87 on the 14 hard questions), about $0.06 per run. Details in [docs/PLAN.md](docs/PLAN.md).
 
 ## Sample data
 
