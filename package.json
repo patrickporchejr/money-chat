@@ -9,7 +9,8 @@
     "lint": "eslint",
     "sample-data": "node scripts/make-sample-data.mjs",
     "save-answers": "tsx --env-file=.env.local scripts/save-answers.mts",
-    "eval": "tsx --env-file=.env.local evals/demo-chat/run-eval.mjs --flow .claude/hillclimb/demo-chat"
+    "eval": "tsx --env-file=.env.local evals/demo-chat/run-eval.mjs --flow .claude/hillclimb/demo-chat",
+    "test": "tsx --test 'src/**/*.test.ts'"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.133.0",

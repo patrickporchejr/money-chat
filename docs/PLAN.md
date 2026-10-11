@@ -109,9 +109,10 @@ Claude gets a small set of tools and decides which to call, possibly more than o
 |---|---|---|
 | `search_transactions(query, date_from?, date_to?, account?, min_amount?, max_amount?)` | Hybrid search over transactions | Yes |
 | `search_fine_print(query)` | Hybrid search over statement documents | Yes |
-| `sum_transactions(merchants? \| categories?, date_from?, date_to?, group_by?)` | Exact totals in SQL | No, plain math |
+| `summarize_transactions(descriptions?, date_from?, date_to?, account?, group_by?)` | Exact counts, totals and averages in SQL | No, plain math |
+| `find_recurring_charges()` | Monthly charges at a steady amount (subscriptions) | No, a pattern query |
 
-For "how much did I spend on coffee?", Claude calls `search_transactions("coffee")` to find which merchants count, then `sum_transactions(merchants=[...])` for the exact total. Answers must cite the transaction IDs or fine print chunks they used.
+For "how much did I spend on coffee?", Claude calls `search_transactions("coffee")` to find which stores count, then `summarize_transactions(descriptions=[...])` for the exact total. `search_transactions` can also leave out the query to list by filters, sorted newest, oldest, largest or smallest spend. Answers must cite the transaction IDs or fine print chunks they used.
 
 The agent loop and tools are one TypeScript module that takes a database connection. In the browser it gets the user's PGlite. On the server it gets the sample data index.
 
@@ -140,6 +141,10 @@ The server loads the sample CSVs into an in-memory PGlite and embeds them on fir
 - **No server storage of user data.** Our only API route is the demo, and it never accepts transaction data.
 - **Clear data.** One button deletes the PGlite database from the browser.
 
+### Unit tests
+
+`npm test` checks all the code that always gives the same answer (CSV reading, filters, sorting, totals, averages, recurring charges, the demo's date) against numbers computed separately from the sample CSVs. Free, and runs in seconds.
+
 ### Quality checks (evals)
 
 `npm run eval` asks the real agent 26 questions about the sample data (`evals/demo-chat/cases.json`, readable in `CASES.md`) and grades every answer:
@@ -166,7 +171,7 @@ Each step is its own pull request, and each one ends with something you can see 
 3. **Chat (sample data).** Ask a question, get an answer that points to the transactions it used. ✅
 4. **Saved answers and limits.** Suggested questions, the answer cache, rate limits. ✅
 5. **Quality checks (evals).** 26 questions with known answers, scored automatically on every change. Moved up from last, so every later step can show before/after scores. ✅
-6. **Exact math.** "How much did I spend on coffee?" uses RAG to pick the merchants, then adds them up. Also sorting ("biggest purchase").
+6. **Exact math.** "How much did I spend on coffee?" uses RAG to pick the merchants, then the database adds them up. Also sorting ("cheapest coffee") and "last month" meaning the latest full month. ✅
 7. **Fine print.** "Why was I charged $35?" finds the fee and the rule.
 8. **Bring your own key.** Use the app with your real statements.
 9. **Store names and categories.** Clean up messy bank names (`SQ *BLUE BTL 0423` → Blue Bottle Coffee) so search finds them too, and learn from your corrections.
