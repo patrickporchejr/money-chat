@@ -1,4 +1,4 @@
-import { MessageSquare, Plus, ShieldCheck, Table2, Upload, Wallet } from "lucide-react";
+import { MessageSquare, Plus, ShieldCheck, Table2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -12,11 +12,31 @@ const NAV: { view: View; label: string; icon: typeof MessageSquare }[] = [
 export function Logo() {
   return (
     <div className="flex items-center gap-2">
-      <div className="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
-        <Wallet className="size-4" />
-      </div>
+      <LogoMark className="size-8" />
       <span className="font-semibold">Money Chat</span>
     </div>
+  );
+}
+
+// The app's mark: a chat bubble with a dollar sign. Same drawing as app/icon.svg.
+function LogoMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <defs>
+        <linearGradient id="logo-gradient" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#8b5cf6" />
+          <stop offset="1" stopColor="#6d28d9" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M8 2h16a6 6 0 0 1 6 6v11a6 6 0 0 1-6 6H14l-6 5v-5a6 6 0 0 1-6-6V8a6 6 0 0 1 6-6z"
+        fill="url(#logo-gradient)"
+      />
+      <g fill="none" stroke="#fff" strokeWidth="2.9" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20 9.6c-.8-1.2-2.3-1.9-4-1.9-2.3 0-3.9 1.2-3.9 2.9 0 1.9 1.7 2.5 3.9 3s3.9 1.2 3.9 3.1c0 1.8-1.7 3-3.9 3-1.8 0-3.3-.7-4.2-2" />
+        <path d="M16 5v2.6M16 19.8v2.4" />
+      </g>
+    </svg>
   );
 }
 
