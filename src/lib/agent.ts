@@ -6,9 +6,11 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { PGlite } from "@electric-sql/pglite";
 import { z } from "zod";
+import type { FinePrintChunk } from "@/lib/fine-print";
 import {
   findRecurringCharges,
   listTransactions,
+  searchFinePrint,
   searchTransactions,
   summarizeTransactions,
   type ListSort,
@@ -34,6 +36,7 @@ export type AgentEvent =
   | { type: "text"; text: string }
   | { type: "search"; query: string }
   | { type: "sources"; sources: Record<string, Transaction> }
+  | { type: "documents"; documents: Record<string, FinePrintChunk> } // what [D1] etc. point to
   | { type: "error"; message: string }
   | { type: "saved" }; // this answer was saved earlier, so it cost nothing
 
@@ -111,6 +114,18 @@ const TOOLS: Anthropic.Tool[] = [
     },
   },
   {
+    name: "search_fine_print",
+    description:
+      "Search the statements' fine print: fee schedules, the cardholder agreement and account notices. Use it to " +
+      "explain why a fee or charge happened, what a rule or rate is, or how to avoid a fee. Returns paragraphs, " +
+      "each with a reference like D2.",
+    input_schema: {
+      type: "object",
+      properties: { query: { type: "string", description: "What to look for, e.g. \"overdraft fee\" or \"interest rate change\"." } },
+      required: ["query"],
+    },
+  },
+  {
     name: "find_recurring_charges",
     description:
       "List charges that repeat about once a month at a steady amount: subscriptions, memberships, rent, bills " +
@@ -136,9 +151,10 @@ How to answer:
 - Look things up with search_transactions before answering. Use the date, account and amount filters when the question mentions them. To see everything around a date (for example, what led to a fee), leave out the query and use only the date filters.
 - Bank descriptions are short and messy (e.g. "NETFLIX.COM", "TIME OUT MARKET LISBOA"), so one search is rarely enough. Try a few wordings: likely store names, categories, local spellings, and related words. For example, for subscriptions try streaming services, apps, gyms and memberships. Once you find something, search around its dates for related charges.
 - For subscriptions, memberships or regular bills, use find_recurring_charges.
+- To explain why a fee or charge happened, or what a rule or rate is, search the fine print with search_fine_print as well as the transactions, and connect the two: the charge [T3] and the rule that caused it [D2].
 - Answer only from what the tools return. If nothing relevant comes back, say so. Never say something doesn't exist just because you didn't find it: say you didn't find it.
 - Your earlier answers in this conversation came from searches you can no longer see. Trust them. If you need their details again, search again rather than taking anything back.
-- Cite every transaction you mention with its reference in square brackets, one per bracket, like [T3] or [T3][T4].
+- Cite every transaction you mention with its reference in square brackets, one per bracket, like [T3] or [T3][T4]. Cite fine print the same way, like [D2].
 - For totals, averages, counts or comparisons, never do the math yourself. First search to find the exact descriptions that count (for coffee: every spelling of every coffee shop), then use summarize_transactions with those descriptions and any dates. Count generously: anything the question plausibly covers belongs in (a café counts as coffee). Report its numbers exactly, and say what was included.
 - For biggest, smallest, cheapest or most expensive, use search_transactions without a query, with a sort and filters (descriptions, account, dates).
 - Keep it short: one or two sentences, then at most 8 transactions as a list. Plain text only: no headings or bold. Start list items with "- ".
@@ -189,11 +205,13 @@ export async function runAgent({
   // would point at the wrong rows, so strip them from the history.
   const messages: Anthropic.MessageParam[] = history.map((turn) => ({
     role: turn.role,
-    content: turn.role === "assistant" ? turn.content.replace(/\s*\[T\d+(?:,\s*T\d+)*\]/g, "") : turn.content,
+    content: turn.role === "assistant" ? turn.content.replace(/\s*\[[TD]\d+(?:,\s*[TD]\d+)*\]/g, "") : turn.content,
   }));
 
   const refs = new Map<string, string>(); // transaction id -> "T3"
   const sources: Record<string, Transaction> = {};
+  const docRefs = new Map<string, string>(); // fine print chunk id -> "D2"
+  const documents: Record<string, FinePrintChunk> = {};
 
   // Gives a transaction a short reference like T3 and remembers what it points to.
   function cite(t: Transaction) {
@@ -211,6 +229,20 @@ export async function runAgent({
       return [header, ...c.latest.map((t) => `  ${cite(t)} | ${t.date} | ${t.amount.toFixed(2)}`)].join("\n");
     });
     return `${charges.length} recurring charges:\n\n${blocks.join("\n\n")}`;
+  }
+
+  async function finePrint(query: string) {
+    const [embedding] = await embed([query]);
+    const found = await searchFinePrint(db, { text: query, embedding });
+    if (found.length === 0) return "Nothing in the fine print matches.";
+    return found
+      .map((c) => {
+        if (!docRefs.has(c.id)) docRefs.set(c.id, `D${docRefs.size + 1}`);
+        const ref = docRefs.get(c.id)!;
+        documents[ref] = { id: c.id, source: c.source, heading: c.heading, text: c.text };
+        return `${ref} | ${c.heading}\n${c.text}`;
+      })
+      .join("\n\n");
   }
 
   async function summarize(input: z.infer<typeof SummarizeInput>) {
@@ -302,6 +334,16 @@ export async function runAgent({
         results.push({ type: "tool_result", tool_use_id: call.id, content: await recurring() });
         continue;
       }
+      if (call.name === "search_fine_print") {
+        const query = (readInput(call) as { query?: unknown } | null)?.query;
+        if (typeof query !== "string" || !query.trim()) {
+          results.push({ type: "tool_result", tool_use_id: call.id, is_error: true, content: "Invalid tool call." });
+          continue;
+        }
+        onEvent({ type: "search", query: `fine print: ${query.slice(0, 100)}` });
+        results.push({ type: "tool_result", tool_use_id: call.id, content: await finePrint(query.slice(0, 200)) });
+        continue;
+      }
       if (call.name === "summarize_transactions") {
         const input = SummarizeInput.safeParse(readInput(call));
         if (!input.success) {
@@ -323,9 +365,10 @@ export async function runAgent({
     // All results go back in one message, so Claude can keep searching in parallel.
     messages.push({ role: "user", content: results });
     onEvent({ type: "sources", sources });
+    if (docRefs.size) onEvent({ type: "documents", documents });
   }
 
-  return { system, messages, responses, sources };
+  return { system, messages, responses, sources, documents };
 }
 
 // Tool input streams in as it's written and is parsed on first read. If it

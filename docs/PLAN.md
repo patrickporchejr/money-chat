@@ -91,7 +91,7 @@ merchant_labels (        -- examples used to label new transactions
 )
 ```
 
-**Chunking.** Each transaction is one chunk. Its search text is the description plus the bank's category (e.g. `WHOLEFDS BKN 10233 (Groceries)`), which helped a lot in testing. Identical texts are embedded once: the sample data's 663 transactions have only 45 unique texts. Fine print is split by section heading, with the heading kept on every chunk.
+**Chunking.** Fine print is split into paragraphs, each keeping its section heading (`lib/fine-print.ts`), in its own `fine_print` table with the same hybrid search. Each transaction is one chunk. Its search text is the description plus the bank's category (e.g. `WHOLEFDS BKN 10233 (Groceries)`), which helped a lot in testing. Identical texts are embedded once: the sample data's 663 transactions have only 45 unique texts. Fine print is split by section heading, with the heading kept on every chunk.
 
 ### Retrieval
 
@@ -108,7 +108,7 @@ Claude gets a small set of tools and decides which to call, possibly more than o
 | Tool | What it does | RAG? |
 |---|---|---|
 | `search_transactions(query, date_from?, date_to?, account?, min_amount?, max_amount?)` | Hybrid search over transactions | Yes |
-| `search_fine_print(query)` | Hybrid search over statement documents | Yes |
+| `search_fine_print(query)` | Hybrid search over the fine print, cited as `[D2]` | Yes |
 | `summarize_transactions(descriptions?, date_from?, date_to?, account?, group_by?)` | Exact counts, totals and averages in SQL | No, plain math |
 | `find_recurring_charges()` | Monthly charges at a steady amount (subscriptions) | No, a pattern query |
 
@@ -172,7 +172,7 @@ Each step is its own pull request, and each one ends with something you can see 
 4. **Saved answers and limits.** Suggested questions, the answer cache, rate limits. ✅
 5. **Quality checks (evals).** 26 questions with known answers, scored automatically on every change. Moved up from last, so every later step can show before/after scores. ✅
 6. **Exact math.** "How much did I spend on coffee?" uses RAG to pick the merchants, then the database adds them up. Also sorting ("cheapest coffee") and "last month" meaning the latest full month. ✅
-7. **Fine print.** "Why was I charged $35?" finds the fee and the rule.
+7. **Fine print.** "Why was I charged $35?" finds the fee, what caused it, and the rule. ✅
 8. **Bring your own key.** Use the app with your real statements.
 9. **Store names and categories.** Clean up messy bank names (`SQ *BLUE BTL 0423` → Blue Bottle Coffee) so search finds them too, and learn from your corrections.
 

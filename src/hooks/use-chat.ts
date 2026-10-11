@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import type { AgentEvent, ChatTurn } from "@/lib/agent";
+import type { FinePrintChunk } from "@/lib/fine-print";
 import type { Transaction } from "@/lib/transactions";
 
 export type ChatMessage = {
@@ -9,6 +10,7 @@ export type ChatMessage = {
   content: string;
   searches?: string[]; // what Claude searched for, shown above the answer
   sources?: Record<string, Transaction>; // what [T3] etc. point to
+  documents?: Record<string, FinePrintChunk>; // what [D2] etc. point to
   error?: string;
   pending?: boolean;
   saved?: boolean; // answered from a saved copy, at no cost
@@ -75,6 +77,8 @@ export function useChat() {
               return { ...a, searches: [...(a.searches ?? []), event.query] };
             case "sources":
               return { ...a, sources: event.sources };
+            case "documents":
+              return { ...a, documents: event.documents };
             case "error":
               return { ...a, error: event.message };
             case "saved":

@@ -7,8 +7,18 @@ import { PGlite } from "@electric-sql/pglite";
 import { vector } from "@electric-sql/pglite-pgvector";
 import { pg_textsearch } from "@electric-sql/pglite-pg_textsearch";
 import { env, pipeline, type FeatureExtractionPipeline } from "@huggingface/transformers";
-import { EMBEDDING_MODEL, replaceTransactions, saveEmbeddings, setUpDatabase, textsMissingEmbeddings } from "@/lib/search";
-import { readSampleFiles } from "@/lib/server/sample-files";
+import { chunkFinePrint } from "@/lib/fine-print";
+import {
+  EMBEDDING_MODEL,
+  finePrintMissingEmbeddings,
+  replaceFinePrint,
+  replaceTransactions,
+  saveEmbeddings,
+  saveFinePrintEmbeddings,
+  setUpDatabase,
+  textsMissingEmbeddings,
+} from "@/lib/search";
+import { readFinePrint, readSampleFiles } from "@/lib/server/sample-files";
 import { accountNameFromFile, parseStatement } from "@/lib/transactions";
 
 // Servers like Vercel only allow writing to the temp folder; the model is cached there.
@@ -32,6 +42,10 @@ export function getSampleDatabase() {
     await replaceTransactions(pg, transactions);
     const texts = await textsMissingEmbeddings(pg);
     await saveEmbeddings(pg, texts, await embed(texts));
+
+    await replaceFinePrint(pg, chunkFinePrint(await readFinePrint(), "fine-print"));
+    const chunks = await finePrintMissingEmbeddings(pg);
+    await saveFinePrintEmbeddings(pg, chunks.map((c) => c.id), await embed(chunks.map((c) => c.search_text)));
     return pg;
   })();
   return db;

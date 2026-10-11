@@ -104,10 +104,11 @@
     "question": "Why was I charged a $35 fee?",
     "must_include": [
       "overdraft",
-      "midas"
+      "midas",
+      "below \\$?0|negative|went below zero|overdr[ae]wn"
     ],
     "why": "From the worked example. Needs a list-by-date search to find the same-day repair.",
-    "truth": "Overdraft fee on 2026-06-11, the same day as an $8,150 Midas Auto Service charge on checking.",
+    "truth": "Overdraft fee on 2026-06-11: the $8,150 Midas Auto Service charge that day took the checking balance below $0. Harbor Bank's fee schedule: if a payment takes the balance below $0.00 and the bank pays it anyway, it charges $35 (at most 3 per day).",
     "relevant": "OVERDRAFT|MIDAS"
   },
   {
@@ -712,5 +713,78 @@
     ],
     "relevant": "FOREIGN TRANSACTION",
     "truth": "$38.18 across five fees during the July 2026 Lisbon trip."
+  },
+  {
+    "id": "fineprint-overdraft-rule",
+    "tags": [
+      "fine-print"
+    ],
+    "question": "How do overdraft fees work on my checking account?",
+    "must_include": [
+      "35",
+      "below \\$?0|negative|below zero",
+      "3 .{0,30}(per|a) day|three .{0,30}(per|a) day"
+    ],
+    "truth": "Harbor Bank charges $35 when a payment or purchase takes the balance below $0.00 and the bank pays it anyway; no more than 3 overdraft fees per day."
+  },
+  {
+    "id": "fineprint-avoid-maintenance",
+    "tags": [
+      "fine-print"
+    ],
+    "question": "How can I avoid the $12 monthly fee?",
+    "must_include": [
+      "1,?500"
+    ],
+    "truth": "Keep at least $1,500.00 in checking all month: the $12 maintenance fee is charged on the 1st if the balance dropped below $1,500 at any point the previous month."
+  },
+  {
+    "id": "fineprint-apr-change",
+    "tags": [
+      "fine-print"
+    ],
+    "question": "Did my credit card interest rate change?",
+    "must_include": [
+      "22\\.49",
+      "24\\.99",
+      "april 1|2026-04-01|apr(il)? 1"
+    ],
+    "truth": "Yes: Summit Card's purchase APR went from 22.49% to 24.99% starting April 1, 2026 (notice sent February 15, 2026), because the Prime Rate went up."
+  },
+  {
+    "id": "fineprint-foreign-fee-why",
+    "tags": [
+      "fine-print"
+    ],
+    "question": "Why was I charged foreign transaction fees?",
+    "must_include": [
+      "3 ?%|3 percent|three percent",
+      "lisbon|lisboa|portugal|july"
+    ],
+    "truth": "Summit Card charges 3% on purchases in another currency or processed outside the US; the five fees came from the Lisbon trip purchases in July 2026."
+  },
+  {
+    "id": "fineprint-due-date",
+    "tags": [
+      "fine-print"
+    ],
+    "question": "When is my credit card payment due?",
+    "must_include": [
+      "15(th)?"
+    ],
+    "truth": "The 15th of each month (Summit Card cardholder agreement)."
+  },
+  {
+    "id": "fineprint-late-why",
+    "tags": [
+      "fine-print"
+    ],
+    "question": "Why did I get a late fee in February?",
+    "must_include": [
+      "15(th)?",
+      "22|after the due date|late"
+    ],
+    "relevant": "LATE|PAYMENT THANK|INTEREST",
+    "truth": "The payment is due on the 15th; the February 2026 card payment was made on 2026-02-22, so a $29 late payment fee was charged (2026-02-16), followed by an $18.74 interest charge."
   }
 ]

@@ -1,6 +1,6 @@
 # Demo chat eval: test questions
 
-47 questions about the sample data. The answer keys come from facts planted in the fake data (`scripts/make-sample-data.mjs`), so they're known for certain.
+53 questions about the sample data. The answer keys come from facts planted in the fake data (`scripts/make-sample-data.mjs` and `public/sample-data/fine-print.txt`), so they're known for certain.
 
 **How answers are scored** (each 0 to 1; the headline `score` averages the checks that apply):
 
@@ -12,6 +12,19 @@
 - **Win:** for prompt changes, a Sonnet judge compares each new answer with the frozen baseline answer: 1 better, 0.5 tie, 0 worse.
 
 The math itself (totals, averages, sorting) is covered by unit tests (`npm test`). These questions check what only Claude decides: which stores count, and whether it uses the math tool instead of adding numbers itself.
+
+## Fine print (added in step 7)
+
+Answers should cite the rule as `[D#]` alongside the transactions.
+
+| id | kind | question | must mention | answer key |
+|---|---|---|---|---|
+| fineprint-overdraft-rule | fine-print | How do overdraft fees work on my checking account? | `35`, `below \$?0|negative|below zero`, `3 .{0,30}(per|a) day|three .{0,30}(per|a) day` | Harbor Bank charges $35 when a payment or purchase takes the balance below $0.00 and the bank pays it anyway; no more than 3 overdraft fees per day. |
+| fineprint-avoid-maintenance | fine-print | How can I avoid the $12 monthly fee? | `1,?500` | Keep at least $1,500.00 in checking all month: the $12 maintenance fee is charged on the 1st if the balance dropped below $1,500 at any point the previous month. |
+| fineprint-apr-change | fine-print | Did my credit card interest rate change? | `22\.49`, `24\.99`, `april 1|2026-04-01|apr(il)? 1` | Yes: Summit Card's purchase APR went from 22.49% to 24.99% starting April 1, 2026 (notice sent February 15, 2026), because the Prime Rate went up. |
+| fineprint-foreign-fee-why | fine-print | Why was I charged foreign transaction fees? | `3 ?%|3 percent|three percent`, `lisbon|lisboa|portugal|july` | Summit Card charges 3% on purchases in another currency or processed outside the US; the five fees came from the Lisbon trip purchases in July 2026. |
+| fineprint-due-date | fine-print | When is my credit card payment due? | `15(th)?` | The 15th of each month (Summit Card cardholder agreement). |
+| fineprint-late-why | fine-print | Why did I get a late fee in February? | `15(th)?`, `22|after the due date|late` | The payment is due on the 15th; the February 2026 card payment was made on 2026-02-22, so a $29 late payment fee was charged (2026-02-16), followed by an $18.74 interest charge. |
 
 ## Math (added in step 6)
 
