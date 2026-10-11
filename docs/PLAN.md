@@ -131,15 +131,17 @@ The agent loop and tools are one TypeScript module that takes a database connect
 The server loads the sample CSVs into an in-memory PGlite and embeds them on first use (45 unique texts, ~0.1 s once the model is loaded). It needs the embedding model anyway to embed Claude's search queries, so a pre-built index would add a step without saving much. The embedding runtime is a native Linux binary (~44 MB), listed explicitly in `next.config.ts` because the library loads it dynamically.
 
 **Your own data (your key)**
-- The agent loop runs in the browser and calls the Claude API directly with the user's key.
-- The key is held in memory only: no `localStorage`, gone when the tab closes.
+- The same agent (`lib/agent.ts`, mode `own`) runs in the browser against the local PGlite database and calls the Claude API directly with the user's key. "Today" is the real date.
+- The key is held in React state only: no `localStorage`, gone when the tab closes. A "Forget key" button clears it sooner.
+- Default model is Claude Opus 5.5, with a picker for Sonnet 5.5 and Haiku 5.5. Opus and Sonnet use Anthropic's server-side fallback (`fallbacks: "default"`), so a wrongly declined question is re-run on another model instead of failing.
 - Statement data goes only to Anthropic, as part of the question. Never to our server.
+- Text Claude writes before a tool call ("Let me check…") is dropped from the answer (`clear-text` event).
 
 ### Security
 
-- **Content Security Policy.** `connect-src` allows only our own origin, `api.anthropic.com`, and the host serving the embedding model files. No third-party scripts or analytics on the page.
+- **Content Security Policy** (production, `next.config.ts`): the page may only connect to itself, `api.anthropic.com`, Hugging Face (the embedding model download) and `cdn.jsdelivr.net` (the embedding runtime). Tested: the model still downloads, Anthropic is reachable, and any other host is refused by the browser.
 - **No server storage of user data.** Our only API route is the demo, and it never accepts transaction data.
-- **Clear data.** One button deletes the PGlite database from the browser.
+- **Clear data.** One button deletes the statements and fine print from the browser.
 
 ### Unit tests
 
@@ -173,7 +175,7 @@ Each step is its own pull request, and each one ends with something you can see 
 5. **Quality checks (evals).** 26 questions with known answers, scored automatically on every change. Moved up from last, so every later step can show before/after scores. ✅
 6. **Exact math.** "How much did I spend on coffee?" uses RAG to pick the merchants, then the database adds them up. Also sorting ("cheapest coffee") and "last month" meaning the latest full month. ✅
 7. **Fine print.** "Why was I charged $35?" finds the fee, what caused it, and the rule. ✅
-8. **Bring your own key.** Use the app with your real statements.
+8. **Bring your own key.** Chat about your real statements (and uploaded fine print, .txt/.md) with your own Claude key, straight from the browser. Opus 5.5 by default, with a model picker. ✅
 9. **Store names and categories.** Clean up messy bank names (`SQ *BLUE BTL 0423` → Blue Bottle Coffee) so search finds them too, and learn from your corrections.
 
 ## What we're not doing
