@@ -156,7 +156,7 @@
     ],
     "why": "Bank wrote \"LISBOA\"; earlier versions found only 3 of 6.",
     "truth": "Six charges, July 8-13 2026: TAP Air Portugal $842, Hotel Alfama Lisboa $1,120, Pasteis de Belem $14.50, Time Out Market $48.20, Uber $16.30, A Cevicheria $73.40 (plus 5 foreign transaction fees).",
-    "relevant": "LISBOA|TAP AIR"
+    "relevant": "LISBOA|TAP AIR|FOREIGN TRANSACTION"
   },
   {
     "id": "coffee-september",
