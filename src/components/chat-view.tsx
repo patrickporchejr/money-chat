@@ -43,7 +43,11 @@ export function ChatView({
   const canAsk = !needsKey && !busy;
 
   // Keep the newest text in view while the answer streams in.
-  useEffect(() => bottom.current?.scrollIntoView({ block: "end" }), [messages]);
+  // Braces matter: newer Chrome returns a Promise from scrollIntoView, and an
+  // effect that returns anything but a function crashes React on cleanup.
+  useEffect(() => {
+    bottom.current?.scrollIntoView({ block: "end" });
+  }, [messages]);
 
   async function ask(q: string) {
     if (!q.trim() || !canAsk) return;
