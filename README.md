@@ -4,6 +4,12 @@ Upload your bank statements and ask questions about your money in plain English.
 
 **Live site:** https://money-chat-sigma.vercel.app
 
+<!-- Demo video: add the walkthrough link here -->
+
+## The problem
+
+Bank apps show you a list of transactions. They don't answer the questions people actually have: where the money went, what a fee was for, which subscriptions are still running. Answering those means exporting CSVs, cleaning up cryptic store names, and building a spreadsheet. Money Chat answers them directly, with every number exact and every answer tied to the transactions behind it, without your statements ever leaving your browser.
+
 > "How much did I spend on coffee this year?"
 > "Why was I charged a $35 fee?"
 > "What subscriptions am I paying for?"
